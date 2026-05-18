@@ -326,7 +326,7 @@ Message: ${message}`;
             src="/hero.mp4"
             muted
             playsInline
-            preload="auto"
+            preload="metadata"
             className="h-full w-full object-cover"
           />
 
