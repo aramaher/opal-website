@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -189,6 +189,7 @@ export default function Home() {
 
   const [lang, setLang] = useState<Lang>("fa");
   const [activeStage, setActiveStage] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -199,6 +200,23 @@ export default function Home() {
   const t = content[lang];
   const isFa = lang === "fa";
   const stage = t.stages[activeStage];
+
+  const videoSrc = useMemo(() => {
+    return isMobile ? "/hero-mobile.mp4?v=1" : "/hero.mp4?v=13";
+  }, [isMobile]);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+    };
+  }, []);
 
   useEffect(() => {
     const hero = heroRef.current;
@@ -211,6 +229,7 @@ export default function Home() {
     video.currentTime = 0;
     activeStageRef.current = 0;
     setActiveStage(0);
+    progressBar.style.transform = "scaleX(0)";
 
     let trigger: ScrollTrigger | null = null;
 
@@ -220,8 +239,8 @@ export default function Home() {
       trigger = ScrollTrigger.create({
         trigger: hero,
         start: "top top",
-        end: "+=7600",
-        scrub: 0.65,
+        end: isMobile ? "+=4300" : "+=7600",
+        scrub: isMobile ? 0.35 : 0.65,
         pin: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,
@@ -234,7 +253,7 @@ export default function Home() {
           if (video.duration && Number.isFinite(video.duration)) {
             const targetTime = video.duration * p;
 
-            if (Math.abs(video.currentTime - targetTime) > 0.03) {
+            if (Math.abs(video.currentTime - targetTime) > 0.035) {
               video.currentTime = targetTime;
             }
           }
@@ -264,7 +283,7 @@ export default function Home() {
       video.removeEventListener("loadedmetadata", setupScroll);
       if (trigger) trigger.kill();
     };
-  }, [lang, t.stages.length]);
+  }, [lang, t.stages.length, isMobile, videoSrc]);
 
   const sendToWhatsApp = () => {
     const text =
@@ -293,8 +312,8 @@ Message: ${message}`;
   return (
     <main dir={t.dir} className="overflow-x-hidden bg-black text-white">
       <nav className="fixed left-0 top-0 z-[999] w-full border-b border-white/10 bg-black/35 backdrop-blur-2xl">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-          <img src="/logo.png" alt="OPAL" className="w-24 md:w-32" />
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:h-20 md:px-6">
+          <img src="/logo.png" alt="OPAL" className="w-20 md:w-32" />
 
           <div className="hidden items-center gap-8 text-xs uppercase tracking-[0.18em] text-white/65 md:flex">
             <a href="#services" className="transition hover:text-white">
@@ -311,10 +330,10 @@ Message: ${message}`;
             </a>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
             <button
               onClick={() => setLang(lang === "fa" ? "en" : "fa")}
-              className="rounded-full border border-white/20 px-4 py-2 text-xs uppercase tracking-[0.18em] text-white/80 transition hover:border-white hover:bg-white hover:text-black"
+              className="rounded-full border border-white/20 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-white/80 transition hover:border-white hover:bg-white hover:text-black md:px-4 md:text-xs"
             >
               {t.switchLabel}
             </button>
@@ -322,7 +341,7 @@ Message: ${message}`;
             <a
               href={`https://wa.me/${whatsappNumber}`}
               target="_blank"
-              className="hidden rounded-full border border-white/20 px-5 py-2 text-xs uppercase tracking-[0.18em] text-white/80 transition hover:border-white hover:bg-white hover:text-black md:inline-block"
+              className="rounded-full border border-white/20 px-3 py-2 text-[10px] uppercase tracking-[0.12em] text-white/80 transition hover:border-white hover:bg-white hover:text-black md:px-5 md:text-xs"
             >
               {t.nav.whatsapp}
             </a>
@@ -333,17 +352,18 @@ Message: ${message}`;
       <section ref={heroRef} className="hero-section relative h-screen">
         <div className="relative h-screen overflow-hidden bg-black">
           <video
+            key={videoSrc}
             ref={videoRef}
-            src="/hero.mp4?v=12"
+            src={videoSrc}
             muted
             playsInline
-            preload="auto"
+            preload="metadata"
             className="hero-video absolute inset-0 h-full w-full object-cover"
           />
 
-          <div className="absolute inset-0 bg-black/[0.03]" />
-          <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-black/45 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
+          <div className="absolute inset-0 bg-black/[0.04]" />
+          <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/50 to-transparent md:h-36" />
+          <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black/65 via-black/20 to-transparent md:h-64" />
 
           <div className="absolute left-0 top-0 z-50 h-1 w-full bg-white/10">
             <div
@@ -353,13 +373,13 @@ Message: ${message}`;
           </div>
 
           <div className="absolute inset-0 z-40 flex items-end">
-            <div className="mx-auto w-full max-w-7xl px-6 pb-24 md:pb-28">
-              <div className="mb-8 flex items-center justify-between gap-6">
-                <p className="text-xs uppercase tracking-[0.35em] text-white/55">
+            <div className="mx-auto w-full max-w-7xl px-5 pb-20 md:px-6 md:pb-28">
+              <div className="mb-5 flex items-center justify-between gap-4 md:mb-8">
+                <p className="max-w-[220px] text-[9px] uppercase tracking-[0.22em] text-white/55 md:max-w-none md:text-xs md:tracking-[0.35em]">
                   {t.heroSmall}
                 </p>
 
-                <p className="text-xs uppercase tracking-[0.35em] text-white/50">
+                <p className="text-[9px] uppercase tracking-[0.22em] text-white/50 md:text-xs md:tracking-[0.35em]">
                   {String(activeStage + 1).padStart(2, "0")} /{" "}
                   {String(t.stages.length).padStart(2, "0")}
                 </p>
@@ -371,27 +391,27 @@ Message: ${message}`;
                   isFa ? "text-right" : "text-left"
                 }`}
               >
-                <p className="mb-5 text-xs uppercase tracking-[0.35em] text-white/55">
+                <p className="mb-4 text-[10px] uppercase tracking-[0.26em] text-white/55 md:mb-5 md:text-xs md:tracking-[0.35em]">
                   {stage.eyebrow}
                 </p>
 
-                <h1 className="text-5xl font-light leading-tight text-white md:text-8xl">
+                <h1 className="text-4xl font-light leading-tight text-white md:text-8xl">
                   {stage.title}
                 </h1>
 
-                <p className="mt-6 max-w-2xl text-base leading-8 text-white/80 md:text-xl">
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-white/80 md:mt-6 md:text-xl md:leading-8">
                   {stage.desc}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="absolute bottom-8 left-1/2 z-50 -translate-x-1/2 text-center">
-            <p className="mb-3 text-[10px] uppercase tracking-[0.35em] text-white/45">
+          <div className="absolute bottom-6 left-1/2 z-50 -translate-x-1/2 text-center md:bottom-8">
+            <p className="mb-2 text-[9px] uppercase tracking-[0.3em] text-white/45 md:mb-3 md:text-[10px]">
               Scroll
             </p>
-            <div className="mx-auto h-10 w-[1px] overflow-hidden bg-white/20">
-              <div className="h-5 w-full animate-scrollLine bg-white" />
+            <div className="mx-auto h-8 w-[1px] overflow-hidden bg-white/20 md:h-10">
+              <div className="h-4 w-full animate-scrollLine bg-white md:h-5" />
             </div>
           </div>
         </div>
@@ -399,22 +419,22 @@ Message: ${message}`;
 
       <section
         id="services"
-        className="flex min-h-screen items-center justify-center bg-black px-6 py-28"
+        className="flex min-h-screen items-center justify-center bg-black px-5 py-24 md:px-6 md:py-28"
       >
         <div className="w-full max-w-6xl">
           <p className="mb-6 text-sm uppercase text-white/40">
             {t.servicesLabel}
           </p>
 
-          <h2 className="mb-16 text-4xl font-light leading-tight md:text-7xl">
+          <h2 className="mb-12 text-4xl font-light leading-tight md:mb-16 md:text-7xl">
             {t.servicesTitle}
           </h2>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-3 md:gap-6">
             {t.services.map((item) => (
               <div
                 key={item}
-                className="luxury-card rounded-3xl border border-white/10 bg-white/[0.04] p-8 backdrop-blur-xl transition duration-500 hover:-translate-y-2 hover:border-white/30 hover:bg-white/[0.08]"
+                className="luxury-card rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl transition duration-500 hover:-translate-y-2 hover:border-white/30 hover:bg-white/[0.08] md:p-8"
               >
                 <h3 className="text-2xl font-light">{item}</h3>
                 <p className="mt-4 text-white/50">{t.serviceDesc}</p>
@@ -426,22 +446,22 @@ Message: ${message}`;
 
       <section
         id="zones"
-        className="flex min-h-screen items-center justify-center bg-zinc-950 px-6 py-28"
+        className="flex min-h-screen items-center justify-center bg-zinc-950 px-5 py-24 md:px-6 md:py-28"
       >
         <div className="w-full max-w-6xl text-center">
           <p className="mb-6 text-sm uppercase text-white/40">
             {t.zonesLabel}
           </p>
 
-          <h2 className="mb-16 text-4xl font-light md:text-7xl">
+          <h2 className="mb-12 text-4xl font-light md:mb-16 md:text-7xl">
             {t.zonesTitle}
           </h2>
 
-          <div className="grid gap-6 md:grid-cols-4">
+          <div className="grid gap-5 md:grid-cols-4 md:gap-6">
             {t.zones.map((item) => (
               <div
                 key={item}
-                className="luxury-card rounded-3xl border border-white/10 bg-black p-10 text-center transition duration-500 hover:-translate-y-2 hover:border-white/30"
+                className="luxury-card rounded-3xl border border-white/10 bg-black p-8 text-center transition duration-500 hover:-translate-y-2 hover:border-white/30 md:p-10"
               >
                 <h3 className="text-3xl font-light">{item}</h3>
               </div>
@@ -452,7 +472,7 @@ Message: ${message}`;
 
       <section
         id="process"
-        className="flex min-h-screen items-center justify-center bg-black px-6 py-28"
+        className="flex min-h-screen items-center justify-center bg-black px-5 py-24 md:px-6 md:py-28"
       >
         <div className="max-w-6xl text-center">
           <p className="mb-6 text-sm uppercase text-white/40">
@@ -463,7 +483,7 @@ Message: ${message}`;
             {t.processTitle}
           </h2>
 
-          <div className="grid gap-6 md:grid-cols-5">
+          <div className="grid gap-5 md:grid-cols-5 md:gap-6">
             {t.process.map((step, index) => (
               <div
                 key={step}
@@ -481,9 +501,9 @@ Message: ${message}`;
 
       <section
         id="contact"
-        className="flex min-h-screen items-center justify-center bg-zinc-950 px-6 py-28"
+        className="flex min-h-screen items-center justify-center bg-zinc-950 px-5 py-24 md:px-6 md:py-28"
       >
-        <div className="grid max-w-6xl gap-12 md:grid-cols-2">
+        <div className="grid max-w-6xl gap-10 md:grid-cols-2 md:gap-12">
           <div>
             <p className="mb-6 text-sm uppercase text-white/40">
               {t.contactLabel}
@@ -506,7 +526,7 @@ Message: ${message}`;
             </a>
           </div>
 
-          <form className="rounded-3xl border border-white/10 bg-white/[0.04] p-8 backdrop-blur-xl">
+          <form className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl md:p-8">
             <div className="grid gap-5">
               <input
                 value={name}
