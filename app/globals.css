@@ -1,25 +1,21 @@
-@import "tailwindcss";
-
-:root {
-  --background: #050505;
-  --foreground: #ededed;
+.hero-video {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+  filter: none;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.hero-progress {
+  transform-origin: left center;
+  transform: scaleX(0);
+  will-change: transform;
 }
 
 @keyframes heroText {
   0% {
     opacity: 0;
-    transform: translateY(36px) scale(0.98);
-    filter: blur(12px);
+    transform: translateY(26px) scale(0.985);
+    filter: blur(8px);
   }
 
   100% {
@@ -31,41 +27,4 @@ body {
 
 .animate-heroText {
   animation: heroText 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes scrollLine {
-  0% {
-    transform: translateY(-100%);
-  }
-
-  100% {
-    transform: translateY(200%);
-  }
-}
-
-.animate-scrollLine {
-  animation: scrollLine 1.6s ease-in-out infinite;
-}
-
-.luxury-card {
-  position: relative;
-  overflow: hidden;
-}
-
-.luxury-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    120deg,
-    transparent,
-    rgba(255, 255, 255, 0.12),
-    transparent
-  );
-  transform: translateX(-100%);
-  transition: transform 0.8s ease;
-}
-
-.luxury-card:hover::before {
-  transform: translateX(100%);
 }
