@@ -323,7 +323,7 @@ Message: ${message}`;
         <div className="relative h-screen overflow-hidden">
           <video
             ref={videoRef}
-            src="/hero.mp4"
+            src="/hero-hq.mp4"
             muted
             playsInline
             preload="metadata"
