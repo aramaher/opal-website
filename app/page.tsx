@@ -184,10 +184,11 @@ const content = {
 export default function Home() {
   const heroRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const activeStageRef = useRef(0);
 
   const [lang, setLang] = useState<Lang>("fa");
   const [activeStage, setActiveStage] = useState(0);
-  const [progress, setProgress] = useState(0);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -202,11 +203,14 @@ export default function Home() {
   useEffect(() => {
     const hero = heroRef.current;
     const video = videoRef.current;
+    const progressBar = progressBarRef.current;
 
-    if (!hero || !video) return;
+    if (!hero || !video || !progressBar) return;
 
     video.pause();
     video.currentTime = 0;
+    activeStageRef.current = 0;
+    setActiveStage(0);
 
     let trigger: ScrollTrigger | null = null;
 
@@ -216,18 +220,23 @@ export default function Home() {
       trigger = ScrollTrigger.create({
         trigger: hero,
         start: "top top",
-        end: "+=7000",
-        scrub: 1,
+        end: "+=7600",
+        scrub: 0.65,
         pin: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,
 
         onUpdate: (self) => {
           const p = self.progress;
-          setProgress(p);
+
+          progressBar.style.transform = `scaleX(${p})`;
 
           if (video.duration && Number.isFinite(video.duration)) {
-            video.currentTime = video.duration * p;
+            const targetTime = video.duration * p;
+
+            if (Math.abs(video.currentTime - targetTime) > 0.03) {
+              video.currentTime = targetTime;
+            }
           }
 
           const nextStage = Math.min(
@@ -235,7 +244,10 @@ export default function Home() {
             Math.floor(p * t.stages.length)
           );
 
-          setActiveStage(nextStage);
+          if (nextStage !== activeStageRef.current) {
+            activeStageRef.current = nextStage;
+            setActiveStage(nextStage);
+          }
         },
       });
 
@@ -251,7 +263,6 @@ export default function Home() {
     return () => {
       video.removeEventListener("loadedmetadata", setupScroll);
       if (trigger) trigger.kill();
-      ScrollTrigger.getAll().forEach((item) => item.kill());
     };
   }, [lang, t.stages.length]);
 
@@ -281,7 +292,7 @@ Message: ${message}`;
 
   return (
     <main dir={t.dir} className="overflow-x-hidden bg-black text-white">
-      <nav className="fixed left-0 top-0 z-[999] w-full border-b border-white/10 bg-black/45 backdrop-blur-2xl">
+      <nav className="fixed left-0 top-0 z-[999] w-full border-b border-white/10 bg-black/35 backdrop-blur-2xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
           <img src="/logo.png" alt="OPAL" className="w-24 md:w-32" />
 
@@ -320,34 +331,35 @@ Message: ${message}`;
       </nav>
 
       <section ref={heroRef} className="hero-section relative h-screen">
-        <div className="relative h-screen overflow-hidden">
+        <div className="relative h-screen overflow-hidden bg-black">
           <video
             ref={videoRef}
-            src="/hero.mp4?v=3"
+            src="/hero.mp4?v=12"
             muted
             playsInline
-            preload="metadata"
-            className="h-full w-full object-cover"
+            preload="auto"
+            className="hero-video absolute inset-0 h-full w-full object-cover"
           />
 
-          <div className="absolute inset-0 bg-black/10" />
-          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/50 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black via-black/25 to-transparent" />
+          <div className="absolute inset-0 bg-black/[0.03]" />
+          <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-black/45 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
+
           <div className="absolute left-0 top-0 z-50 h-1 w-full bg-white/10">
             <div
-              className="h-full bg-white transition-all duration-150"
-              style={{ width: `${progress * 100}%` }}
+              ref={progressBarRef}
+              className="hero-progress h-full bg-white"
             />
           </div>
 
           <div className="absolute inset-0 z-40 flex items-end">
             <div className="mx-auto w-full max-w-7xl px-6 pb-24 md:pb-28">
               <div className="mb-8 flex items-center justify-between gap-6">
-                <p className="text-xs uppercase tracking-[0.35em] text-white/50">
+                <p className="text-xs uppercase tracking-[0.35em] text-white/55">
                   {t.heroSmall}
                 </p>
 
-                <p className="text-xs uppercase tracking-[0.35em] text-white/45">
+                <p className="text-xs uppercase tracking-[0.35em] text-white/50">
                   {String(activeStage + 1).padStart(2, "0")} /{" "}
                   {String(t.stages.length).padStart(2, "0")}
                 </p>
@@ -359,7 +371,7 @@ Message: ${message}`;
                   isFa ? "text-right" : "text-left"
                 }`}
               >
-                <p className="mb-5 text-xs uppercase tracking-[0.35em] text-white/50">
+                <p className="mb-5 text-xs uppercase tracking-[0.35em] text-white/55">
                   {stage.eyebrow}
                 </p>
 
@@ -367,7 +379,7 @@ Message: ${message}`;
                   {stage.title}
                 </h1>
 
-                <p className="mt-6 max-w-2xl text-base leading-8 text-white/75 md:text-xl">
+                <p className="mt-6 max-w-2xl text-base leading-8 text-white/80 md:text-xl">
                   {stage.desc}
                 </p>
               </div>
