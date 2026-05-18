@@ -332,8 +332,7 @@ Message: ${message}`;
 
           <div className="absolute inset-0 bg-black/10" />
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/50 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black via-black/25 to-transparent" />
-
+          <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black/60 via-black/25 to-transparent" />
           <div className="absolute left-0 top-0 z-50 h-1 w-full bg-white/10">
             <div
               className="h-full bg-white transition-all duration-150"
