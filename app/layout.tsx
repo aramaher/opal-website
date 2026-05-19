@@ -27,10 +27,7 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl">
       <head>
-        <Script
-          src="https://cdn.tailwindcss.com"
-          strategy="beforeInteractive"
-        />
+        <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
 
         <style
           dangerouslySetInnerHTML={{
@@ -40,12 +37,10 @@ export default function RootLayout({
                 --foreground: #ededed;
                 --accent-red: #e10600;
                 --accent-green: #00a651;
-                --border: rgba(255, 255, 255, 0.1);
+                --border: rgba(255,255,255,0.1);
               }
 
-              * {
-                box-sizing: border-box;
-              }
+              * { box-sizing: border-box; }
 
               html {
                 scroll-behavior: auto;
@@ -62,33 +57,14 @@ export default function RootLayout({
                 -moz-osx-font-smoothing: grayscale;
               }
 
-              a {
-                color: inherit;
-                text-decoration: none;
-              }
-
-              button,
-              input,
-              textarea,
-              select {
-                font-family: inherit;
-              }
-
-              img,
-              video {
-                max-width: 100%;
-              }
-
-              ::selection {
-                background: rgba(225, 6, 0, 0.35);
-                color: #fff;
-              }
+              a { color: inherit; text-decoration: none; }
+              button, input, textarea, select { font-family: inherit; }
+              img, video { max-width: 100%; }
 
               .hero-video {
                 transform: translateZ(0);
                 backface-visibility: hidden;
                 will-change: transform;
-                filter: none;
                 background: #000;
               }
 
@@ -108,7 +84,6 @@ export default function RootLayout({
                   transform: translateY(26px) scale(0.985);
                   filter: blur(8px);
                 }
-
                 100% {
                   opacity: 1;
                   transform: translateY(0) scale(1);
@@ -121,13 +96,8 @@ export default function RootLayout({
               }
 
               @keyframes scrollLine {
-                0% {
-                  transform: translateY(-100%);
-                }
-
-                100% {
-                  transform: translateY(200%);
-                }
+                0% { transform: translateY(-100%); }
+                100% { transform: translateY(200%); }
               }
 
               .animate-scrollLine {
@@ -276,40 +246,34 @@ export default function RootLayout({
                 border: 1px solid var(--border);
                 backdrop-filter: blur(18px);
                 -webkit-backdrop-filter: blur(18px);
-                box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+                box-shadow: 0 24px 80px rgba(0,0,0,0.22);
               }
 
               .field-input {
                 width: 100%;
                 border-radius: 0.75rem;
                 border: 1px solid var(--border);
-                background: rgba(0, 0, 0, 0.45);
+                background: rgba(0,0,0,0.45);
                 padding: 1rem 1.25rem;
                 color: #fff;
                 outline: none;
-                transition:
-                  border-color 0.25s ease,
-                  background 0.25s ease;
+                transition: border-color 0.25s ease, background 0.25s ease;
               }
 
               .field-input::placeholder {
-                color: rgba(255, 255, 255, 0.32);
+                color: rgba(255,255,255,0.32);
               }
 
               .field-input:focus {
-                border-color: rgba(255, 255, 255, 0.35);
-                background: rgba(0, 0, 0, 0.58);
+                border-color: rgba(255,255,255,0.35);
+                background: rgba(0,0,0,0.58);
               }
 
               .btn-whatsapp {
-                border: 1px solid rgba(0, 166, 81, 0.45);
-                background: linear-gradient(
-                  135deg,
-                  rgba(0, 166, 81, 0.95),
-                  rgba(0, 120, 60, 0.95)
-                );
+                border: 1px solid rgba(0,166,81,0.45);
+                background: linear-gradient(135deg, rgba(0,166,81,0.95), rgba(0,120,60,0.95));
                 color: #fff;
-                box-shadow: 0 18px 50px rgba(0, 166, 81, 0.18);
+                box-shadow: 0 18px 50px rgba(0,166,81,0.18);
                 transition:
                   background 0.25s ease,
                   transform 0.25s ease,
@@ -319,13 +283,11 @@ export default function RootLayout({
 
               .btn-whatsapp:hover {
                 transform: translateY(-2px);
-                border-color: rgba(255, 255, 255, 0.5);
-                box-shadow: 0 24px 70px rgba(0, 166, 81, 0.28);
+                border-color: rgba(255,255,255,0.5);
+                box-shadow: 0 24px 70px rgba(0,166,81,0.28);
               }
 
-              .process-timeline {
-                position: relative;
-              }
+              .process-timeline { position: relative; }
 
               .process-timeline::before {
                 content: "";
@@ -337,34 +299,30 @@ export default function RootLayout({
                 background: linear-gradient(
                   90deg,
                   transparent,
-                  rgba(255, 255, 255, 0.15) 15%,
-                  rgba(255, 255, 255, 0.15) 85%,
+                  rgba(255,255,255,0.15) 15%,
+                  rgba(255,255,255,0.15) 85%,
                   transparent
                 );
                 display: none;
               }
 
               @media (min-width: 1024px) {
-                .process-timeline::before {
-                  display: block;
-                }
+                .process-timeline::before { display: block; }
               }
 
-              .process-step {
-                position: relative;
-              }
+              .process-step { position: relative; }
 
               .process-step__dot {
                 width: 10px;
                 height: 10px;
                 border-radius: 50%;
                 background: var(--accent-red);
-                box-shadow: 0 0 14px rgba(225, 6, 0, 0.5);
+                box-shadow: 0 0 14px rgba(225,6,0,0.5);
                 margin-bottom: 1rem;
               }
 
               .car-card {
-                box-shadow: 0 30px 100px rgba(0, 0, 0, 0.35);
+                box-shadow: 0 30px 100px rgba(0,0,0,0.35);
               }
 
               .car-card__image-wrap {
@@ -389,23 +347,22 @@ export default function RootLayout({
 
               .lang-active {
                 color: #fff;
-                border-color: rgba(255, 255, 255, 0.45);
-                background: rgba(255, 255, 255, 0.08);
+                border-color: rgba(255,255,255,0.45);
+                background: rgba(255,255,255,0.08);
               }
 
               .lang-inactive {
-                color: rgba(255, 255, 255, 0.45);
-                border-color: rgba(255, 255, 255, 0.12);
+                color: rgba(255,255,255,0.45);
+                border-color: rgba(255,255,255,0.12);
               }
 
               .lang-inactive:hover {
-                color: rgba(255, 255, 255, 0.75);
-                border-color: rgba(255, 255, 255, 0.25);
+                color: rgba(255,255,255,0.75);
+                border-color: rgba(255,255,255,0.25);
               }
 
               @media (max-width: 768px) {
-                html,
-                body {
+                html, body {
                   width: 100%;
                   overflow-x: hidden;
                 }
@@ -416,9 +373,9 @@ export default function RootLayout({
 
                 .section-shell__overlay {
                   background:
-                    radial-gradient(circle at 18% 20%, rgba(225, 6, 0, 0.1), transparent 26%),
-                    radial-gradient(circle at 82% 75%, rgba(0, 166, 81, 0.1), transparent 28%),
-                    linear-gradient(180deg, rgba(0, 0, 0, 0.82), rgba(5, 5, 5, 0.94));
+                    radial-gradient(circle at 18% 20%, rgba(225,6,0,0.1), transparent 26%),
+                    radial-gradient(circle at 82% 75%, rgba(0,166,81,0.1), transparent 28%),
+                    linear-gradient(180deg, rgba(0,0,0,0.82), rgba(5,5,5,0.94));
                 }
 
                 .glass-panel {
