@@ -467,6 +467,20 @@ export default function Home() {
     const video = videoRef.current;
     const progressBar = progressBarRef.current;
     if (!hero || !video || !progressBar) return;
+    if (isMobile) {
+  video.muted = true;
+  video.playsInline = true;
+  video.loop = true;
+  video.autoplay = true;
+  video.load();
+
+  video.play().catch(() => {
+    // Mobile browser may delay autoplay until interaction.
+  });
+
+  progressBar.style.transform = "scaleX(1)";
+  return;
+}
 
     video.pause();
     video.currentTime = 0;
