@@ -139,7 +139,13 @@ const content = {
     footer: "واردات خودرو از دبی به مناطق آزاد ایران",
     carWa: (model: string, year: string, route: string) =>
       `سلام، من اطلاعات کامل این خودرو را می‌خواهم:\nمدل: ${model}\nسال: ${year}\nمسیر: ${route}`,
-    importWa: (name: string, phone: string, vehicle: string, zone: string, message: string) =>
+    importWa: (
+      name: string,
+      phone: string,
+      vehicle: string,
+      zone: string,
+      message: string,
+    ) =>
       `سلام، من برای واردات خودرو از دبی به مناطق آزاد ایران درخواست دارم.\n\nنام: ${name}\nشماره واتساپ: ${phone}\nمدل خودرو: ${vehicle}\nمنطقه مقصد: ${zone}\nتوضیحات: ${message}`,
   },
   en: {
@@ -229,8 +235,7 @@ const content = {
     ],
     listingsLabel: "Vehicle Listings",
     listingsTitle: "Featured OPAL Vehicles",
-    listingsDesc:
-      "Click WhatsApp on any vehicle to request full details.",
+    listingsDesc: "Click WhatsApp on any vehicle to request full details.",
     carCta: "WhatsApp for details",
     contactLabel: "Contact",
     contactTitle: "Start Your Vehicle Import",
@@ -248,7 +253,13 @@ const content = {
     footer: "Vehicle import from Dubai to Iran free zones",
     carWa: (model: string, year: string, route: string) =>
       `Hello, I want full details for this vehicle:\nModel: ${model}\nYear: ${year}\nRoute: ${route}`,
-    importWa: (name: string, phone: string, vehicle: string, zone: string, message: string) =>
+    importWa: (
+      name: string,
+      phone: string,
+      vehicle: string,
+      zone: string,
+      message: string,
+    ) =>
       `Hello, I have a request for vehicle import from Dubai to Iran free zones.\n\nName: ${name}\nWhatsApp: ${phone}\nVehicle: ${vehicle}\nDestination: ${zone}\nMessage: ${message}`,
   },
 };
@@ -313,7 +324,7 @@ function Reveal({
           observer.disconnect();
         }
       },
-      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" }
+      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
     );
 
     observer.observe(el);
@@ -408,7 +419,7 @@ export default function Home() {
   const [activeStage, setActiveStage] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const [mobilePlayBlocked, setMobilePlayBlocked] = useState(false);
-  
+
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [vehicle, setVehicle] = useState("");
@@ -419,11 +430,11 @@ export default function Home() {
   const isFa = lang === "fa";
   const stage = t.stages[activeStage];
 
-const videoSrc = useMemo(
-  () => (isMobile ? "/hero-mobile.mp4?v=41" : "/hero.mp4?v=41"),
-  [isMobile]
-);
-  
+  const videoSrc = useMemo(
+    () => (isMobile ? "/hero-mobile.mp4?v=41" : "/hero.mp4?v=41"),
+    [isMobile],
+  );
+
   useEffect(() => {
     setZone(t.zoneOptions[0]);
   }, [lang, t.zoneOptions]);
@@ -463,135 +474,146 @@ const videoSrc = useMemo(
     return () => mq.removeEventListener("change", sync);
   }, []);
 
- useEffect(() => {
-  const hero = heroRef.current;
-  const video = videoRef.current;
-  const progressBar = progressBarRef.current;
+  useEffect(() => {
+    const hero = heroRef.current;
+    const video = videoRef.current;
+    const progressBar = progressBarRef.current;
 
-  if (!hero || !video || !progressBar) return;
+    if (!hero || !video || !progressBar) return;
 
-  video.muted = true;
-  video.playsInline = true;
-  video.preload = "auto";
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = "auto";
 
-  activeStageRef.current = 0;
-  setActiveStage(0);
-  progressBar.style.transform = "scaleX(0)";
+    activeStageRef.current = 0;
+    setActiveStage(0);
+    progressBar.style.transform = "scaleX(0)";
 
-  // Mobile: no GSAP video scrub. Just play the video normally.
-  if (isMobile) {
-    video.loop = true;
-    video.autoplay = true;
-    video.load();
+    // Mobile: no GSAP video scrub. Just play the video normally.
+    if (isMobile) {
+      video.loop = true;
+      video.autoplay = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = "auto";
+      video.load();
 
-    const tryPlay = () => {
-      video.play().catch(() => {
-        // Mobile browser may delay autoplay until user interaction.
+      const tryPlay = () => {
+        video
+          .play()
+          .then(() => {
+            setMobilePlayBlocked(false);
+          })
+          .catch(() => {
+            setMobilePlayBlocked(true);
+          });
+      };
+
+      const timer = setTimeout(tryPlay, 250);
+
+      window.addEventListener("touchstart", tryPlay, { once: true });
+      window.addEventListener("click", tryPlay, { once: true });
+      window.addEventListener("pointerdown", tryPlay, { once: true });
+
+      progressBar.style.transform = "scaleX(1)";
+
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener("touchstart", tryPlay);
+        window.removeEventListener("click", tryPlay);
+        window.removeEventListener("pointerdown", tryPlay);
+      };
+    }
+
+    // Desktop: scroll-controlled video.
+    video.loop = false;
+    video.autoplay = false;
+    video.pause();
+
+    try {
+      video.currentTime = 0;
+    } catch {
+      // Ignore seek errors before metadata.
+    }
+
+    let trigger: ScrollTrigger | null = null;
+    let refreshTimerOne: ReturnType<typeof setTimeout> | null = null;
+    let refreshTimerTwo: ReturnType<typeof setTimeout> | null = null;
+
+    const setupScroll = () => {
+      if (trigger) trigger.kill();
+
+      trigger = ScrollTrigger.create({
+        trigger: hero,
+        start: "top top",
+        end: "+=7600",
+        scrub: 0.65,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const p = self.progress;
+
+          progressBar.style.transform = `scaleX(${p})`;
+
+          if (video.duration && Number.isFinite(video.duration)) {
+            const target =
+              p >= 1
+                ? Math.max(0, video.duration - 0.001)
+                : Math.max(0.001, video.duration * p);
+
+            if (Math.abs(video.currentTime - target) > 0.035) {
+              requestAnimationFrame(() => {
+                try {
+                  video.currentTime = target;
+                } catch {
+                  // Ignore Safari seek error.
+                }
+              });
+            }
+          }
+
+          const nextStage = Math.min(
+            t.stages.length - 1,
+            Math.floor(p * t.stages.length),
+          );
+
+          if (nextStage !== activeStageRef.current) {
+            activeStageRef.current = nextStage;
+            setActiveStage(nextStage);
+          }
+        },
       });
+
+      ScrollTrigger.refresh(true);
+      refreshTimerOne = setTimeout(() => ScrollTrigger.refresh(true), 500);
+      refreshTimerTwo = setTimeout(() => ScrollTrigger.refresh(true), 1200);
     };
 
-    tryPlay();
-
-    window.addEventListener("touchstart", tryPlay, { once: true });
-    window.addEventListener("click", tryPlay, { once: true });
-
-    progressBar.style.transform = "scaleX(1)";
+    if (video.readyState >= 1) {
+      setupScroll();
+    } else {
+      video.addEventListener("loadedmetadata", setupScroll, { once: true });
+    }
 
     return () => {
-      window.removeEventListener("touchstart", tryPlay);
-      window.removeEventListener("click", tryPlay);
+      video.removeEventListener("loadedmetadata", setupScroll);
+      if (refreshTimerOne) clearTimeout(refreshTimerOne);
+      if (refreshTimerTwo) clearTimeout(refreshTimerTwo);
+      if (trigger) trigger.kill();
     };
-  }
-
-  // Desktop: scroll-controlled video.
-  video.loop = false;
-  video.autoplay = false;
-  video.pause();
-
-  try {
-    video.currentTime = 0;
-  } catch {
-    // Ignore seek errors before metadata.
-  }
-
-  let trigger: ScrollTrigger | null = null;
-  let refreshTimerOne: ReturnType<typeof setTimeout> | null = null;
-  let refreshTimerTwo: ReturnType<typeof setTimeout> | null = null;
-
-  const setupScroll = () => {
-    if (trigger) trigger.kill();
-
-    trigger = ScrollTrigger.create({
-      trigger: hero,
-      start: "top top",
-      end: "+=7600",
-      scrub: 0.65,
-      pin: true,
-      pinSpacing: true,
-      anticipatePin: 1,
-      invalidateOnRefresh: true,
-      onUpdate: (self) => {
-        const p = self.progress;
-
-        progressBar.style.transform = `scaleX(${p})`;
-
-        if (video.duration && Number.isFinite(video.duration)) {
-          const target =
-            p >= 1
-              ? Math.max(0, video.duration - 0.001)
-              : Math.max(0.001, video.duration * p);
-
-          if (Math.abs(video.currentTime - target) > 0.035) {
-            requestAnimationFrame(() => {
-              try {
-                video.currentTime = target;
-              } catch {
-                // Ignore Safari seek error.
-              }
-            });
-          }
-        }
-
-        const nextStage = Math.min(
-          t.stages.length - 1,
-          Math.floor(p * t.stages.length)
-        );
-
-        if (nextStage !== activeStageRef.current) {
-          activeStageRef.current = nextStage;
-          setActiveStage(nextStage);
-        }
-      },
-    });
-
-    ScrollTrigger.refresh(true);
-    refreshTimerOne = setTimeout(() => ScrollTrigger.refresh(true), 500);
-    refreshTimerTwo = setTimeout(() => ScrollTrigger.refresh(true), 1200);
-  };
-
-  if (video.readyState >= 1) {
-    setupScroll();
-  } else {
-    video.addEventListener("loadedmetadata", setupScroll, { once: true });
-  }
-
-  return () => {
-    video.removeEventListener("loadedmetadata", setupScroll);
-    if (refreshTimerOne) clearTimeout(refreshTimerOne);
-    if (refreshTimerTwo) clearTimeout(refreshTimerTwo);
-    if (trigger) trigger.kill();
-  };
-}, [lang, t.stages.length, isMobile, videoSrc]);
+  }, [lang, t.stages.length, isMobile, videoSrc]);
   const sendForm = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
       window.open(
         waUrl(t.importWa(name, phone, vehicle, zone, message)),
         "_blank",
-        "noopener,noreferrer"
+        "noopener,noreferrer",
       );
     },
-    [t, name, phone, vehicle, zone, message]
+    [t, name, phone, vehicle, zone, message],
   );
 
   const navLinks = [
@@ -648,7 +670,7 @@ const videoSrc = useMemo(
               href={waUrl(
                 isFa
                   ? "سلام، می‌خواهم درباره واردات خودرو از دبی صحبت کنم."
-                  : "Hello, I would like to discuss vehicle import from Dubai."
+                  : "Hello, I would like to discuss vehicle import from Dubai.",
               )}
               target="_blank"
               rel="noopener noreferrer"
@@ -663,44 +685,57 @@ const videoSrc = useMemo(
       {/* —— Hero (pinned scroll timeline) —— */}
       <section ref={heroRef} className="hero-section relative h-screen">
         <div className="relative h-screen overflow-hidden bg-black">
-        <video
-          {isMobile && mobilePlayBlocked ? (
-  <button
-    type="button"
-    onClick={() => {
-      const video = videoRef.current;
-      if (!video) return;
+          <video
+            key={videoSrc}
+            ref={videoRef}
+            src={videoSrc}
+            poster="/hero-poster.jpg"
+            muted
+            playsInline
+            autoPlay={isMobile}
+            loop={isMobile}
+            preload="auto"
+            disablePictureInPicture
+            controls={false}
+            onPlay={() => setMobilePlayBlocked(false)}
+            onCanPlay={() => {
+              if (!isMobile) return;
 
-      video.muted = true;
-      video.playsInline = true;
-      video
-        .play()
-        .then(() => setMobilePlayBlocked(false))
-        .catch(() => setMobilePlayBlocked(true));
-    }}
-    className="absolute inset-0 z-[70] flex items-center justify-center bg-black/35 text-white"
-    aria-label="Play hero video"
-  >
-    <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-black/45 text-2xl backdrop-blur-md">
-      ▶
-    </span>
-  </button>
-) : null}
-        key={videoSrc}
-        ref={videoRef}
-        src={videoSrc}
-        poster="/hero-poster.jpg"
-        muted
-        playsInline
-        autoPlay={isMobile}
-        loop={isMobile}
-        preload="auto"
-        disablePictureInPicture
-        controls={false}
-        onPlay={() => setMobilePlayBlocked(false)}
-        className="hero-video absolute inset-0 h-full w-full object-cover"
-        />
-          
+              const video = videoRef.current;
+              if (!video) return;
+
+              video
+                .play()
+                .then(() => setMobilePlayBlocked(false))
+                .catch(() => setMobilePlayBlocked(true));
+            }}
+            className="hero-video absolute inset-0 h-full w-full object-cover"
+          />
+
+          {isMobile && mobilePlayBlocked ? (
+            <button
+              type="button"
+              onClick={() => {
+                const video = videoRef.current;
+                if (!video) return;
+
+                video.muted = true;
+                video.playsInline = true;
+
+                video
+                  .play()
+                  .then(() => setMobilePlayBlocked(false))
+                  .catch(() => setMobilePlayBlocked(true));
+              }}
+              className="absolute inset-0 z-[70] flex items-center justify-center bg-black/35 text-white"
+              aria-label="Play hero video"
+            >
+              <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-black/45 text-2xl backdrop-blur-md">
+                ▶
+              </span>
+            </button>
+          ) : null}
+
           <div className="pointer-events-none absolute inset-0 bg-black/[0.04]" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/50 to-transparent md:h-36" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black/65 via-black/20 to-transparent md:h-64" />
@@ -801,7 +836,7 @@ const videoSrc = useMemo(
                 href={waUrl(
                   isFa
                     ? `سلام، علاقه‌مند به واردات خودرو به منطقه آزاد ${item} هستم.`
-                    : `Hello, I am interested in vehicle import to ${item} free zone.`
+                    : `Hello, I am interested in vehicle import to ${item} free zone.`,
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -836,9 +871,7 @@ const videoSrc = useMemo(
               <div
                 className={`process-step glass-panel rounded-2xl p-5 md:p-6 ${isFa ? "text-right" : "text-left"}`}
               >
-                <div
-                  className={`process-step__dot ${isFa ? "ms-auto" : ""}`}
-                />
+                <div className={`process-step__dot ${isFa ? "ms-auto" : ""}`} />
                 <span className="text-[10px] tracking-[0.3em] text-white/35">
                   {String(i + 1).padStart(2, "0")}
                 </span>
@@ -947,7 +980,7 @@ const videoSrc = useMemo(
               href={waUrl(
                 isFa
                   ? "سلام، می‌خواهم درباره واردات خودرو از دبی صحبت کنم."
-                  : "Hello, I would like to discuss vehicle import from Dubai."
+                  : "Hello, I would like to discuss vehicle import from Dubai.",
               )}
               target="_blank"
               rel="noopener noreferrer"
@@ -1021,12 +1054,12 @@ const videoSrc = useMemo(
           </Reveal>
         </div>
       </SectionShell>
-  
-           <footer className="border-t border-white/[0.08] bg-[#050505] px-6 py-12 text-center">
-           <img src="/logo.png" alt="OPAL" className="mx-auto mb-7 h-11 w-auto" />
-           <p className="text-[10px] uppercase tracking-[0.28em] text-white/35">
-           © 2026 OPAL — {t.footer}
-            </p>
+
+      <footer className="border-t border-white/[0.08] bg-[#050505] px-6 py-12 text-center">
+        <img src="/logo.png" alt="OPAL" className="mx-auto mb-7 h-11 w-auto" />
+        <p className="text-[10px] uppercase tracking-[0.28em] text-white/35">
+          © 2026 OPAL — {t.footer}
+        </p>
       </footer>
     </main>
   );
