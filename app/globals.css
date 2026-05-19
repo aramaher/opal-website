@@ -1,67 +1,238 @@
-.hero-video {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  will-change: transform;
-  filter: none;
+@import "tailwindcss";
+
+:root {
+  --background: #050505;
+  --foreground: #ededed;
+  --muted: rgba(255, 255, 255, 0.55);
+  --accent-red: #e10600;
+  --accent-green: #00a651;
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--background);
+  /* Stop iOS double-tap zoom on UI controls */
+  touch-action: manipulation;
+  /* Prevent iOS Safari font scaling on orientation change */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter",
+    "Helvetica Neue", Arial, "Noto Sans Arabic", "Vazirmatn", "Tahoma", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  /* Disable iOS Safari pull-to-refresh bounce on the body */
+  overscroll-behavior-y: none;
+}
+
+[dir="rtl"] body {
+  font-family: "Vazirmatn", "IRANSansX", "IRANSans", "Tahoma", -apple-system,
+    "Segoe UI", sans-serif;
+}
+
+/* Larger tap target without changing visual size */
+.tap-target {
+  position: relative;
+}
+.tap-target::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+
+/* Form controls â€” 16px minimum prevents iOS Safari zoom on focus */
+input,
+select,
+textarea,
+button {
+  font-size: 16px;
+}
+
+select,
+option {
+  background-color: #000;
+  color: #fff;
+}
+
+/* iOS Safari select arrow styling */
+.form-input {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+select.form-input {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ffffff' stroke-opacity='0.5' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.25rem center;
+  background-size: 12px 8px;
+  padding-right: 2.75rem;
+}
+
+[dir="rtl"] select.form-input {
+  background-position: left 1.25rem center;
+  padding-right: 1.25rem;
+  padding-left: 2.75rem;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+::selection {
+  background: rgba(225, 6, 0, 0.55);
+  color: #fff;
+}
+
+/* Progress bar â€” GPU-accelerated */
 .hero-progress {
   transform-origin: left center;
   transform: scaleX(0);
   will-change: transform;
 }
 
-@keyframes heroText {
-  0% {
-    opacity: 0;
-    transform: translateY(26px) scale(0.985);
-    filter: blur(8px);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
+[dir="rtl"] .hero-progress {
+  transform-origin: right center;
 }
 
-.animate-heroText {
-  animation: heroText 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
+/* Scroll line indicator */
 @keyframes scrollLine {
   0% {
     transform: translateY(-100%);
   }
-
   100% {
     transform: translateY(200%);
   }
 }
 
 .animate-scrollLine {
-  animation: scrollLine 1.6s ease-in-out infinite;
+  animation: scrollLine 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+/* Luxury card sheen â€” desktop only */
 .luxury-card {
   position: relative;
   overflow: hidden;
+  isolation: isolate;
 }
 
-.luxury-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    120deg,
-    transparent,
-    rgba(255, 255, 255, 0.12),
-    transparent
-  );
-  transform: translateX(-100%);
-  transition: transform 0.8s ease;
+.luxury-card > * {
+  position: relative;
+  z-index: 2;
 }
 
-.luxury-card:hover::before {
-  transform: translateX(100%);
+@media (min-width: 768px) and (hover: hover) {
+  .luxury-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      transparent 100%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .luxury-card:hover::before {
+    transform: translateX(100%);
+  }
+}
+
+/* Hero video performance hints */
+video {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* ============================================================
+   MOBILE OPTIMIZATIONS
+   - Reduce blur and shadow intensity (very expensive on iOS)
+   - Disable smooth scroll on mobile (interferes with ScrollTrigger)
+   - Disable heavy transitions on touch devices
+   ============================================================ */
+
+@media (max-width: 767px) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  /* Cap backdrop-blur on mobile â€” major perf cost on iOS Safari */
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* Drop sheen pseudo-element entirely on mobile */
+  .luxury-card::before {
+    display: none;
+  }
+
+  /* Lighter hover transitions */
+  .luxury-card,
+  .group {
+    transition-duration: 250ms;
+  }
+
+  /* Form font slightly tighter on small screens but still â‰¥16px */
+  .form-input {
+    font-size: 16px;
+  }
+}
+
+/* Tablet refinements (iPad Safari) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .backdrop-blur-2xl {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-scrollLine {
+    animation: none !important;
+  }
+}
+
+/* Devices without hover (mobile): kill hover transforms to prevent stuck states */
+@media (hover: none) {
+  .hover\\:-translate-y-1\\.5:hover {
+    transform: none;
+  }
 }
