@@ -664,6 +664,28 @@ const videoSrc = useMemo(
       <section ref={heroRef} className="hero-section relative h-screen">
         <div className="relative h-screen overflow-hidden bg-black">
         <video
+          {isMobile && mobilePlayBlocked ? (
+  <button
+    type="button"
+    onClick={() => {
+      const video = videoRef.current;
+      if (!video) return;
+
+      video.muted = true;
+      video.playsInline = true;
+      video
+        .play()
+        .then(() => setMobilePlayBlocked(false))
+        .catch(() => setMobilePlayBlocked(true));
+    }}
+    className="absolute inset-0 z-[70] flex items-center justify-center bg-black/35 text-white"
+    aria-label="Play hero video"
+  >
+    <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-black/45 text-2xl backdrop-blur-md">
+      ▶
+    </span>
+  </button>
+) : null}
         key={videoSrc}
         ref={videoRef}
         src={videoSrc}
