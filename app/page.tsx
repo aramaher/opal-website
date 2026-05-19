@@ -952,9 +952,9 @@ export default function Home() {
       </SectionShell>
 
       <footer className="border-t border-white/[0.08] bg-[#050505] px-6 py-12 text-center">
-        <img src="/logo.png" alt="OPAL" className="mx-auto mb-5 h-9 w-auto" />
-        <p className="text-[10px] uppercase tracking-[0.28em] text-white/35">
-          © 2026 OPAL — {t.footer}
+        <img src="/logo.png" alt="OPAL" className="mx-auto mb-7 h-11 w-auto" />
+        <p className="fixed bottom-4 right-4 z-[9999] rounded-full bg-red-600 px-4 py-2 text-white">
+        NEW OPAL VERSION 2026
         </p>
       </footer>
     </main>
