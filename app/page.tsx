@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -453,11 +454,12 @@ export default function Home() {
     };
   }, []);
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+  useLayoutEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const sync = () => setIsMobile(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
   }, []);
 
   useEffect(() => {
@@ -519,14 +521,16 @@ export default function Home() {
       refreshTimerTwo = setTimeout(() => ScrollTrigger.refresh(true), 1200);
     };
 
+    const onReady = () => setupScroll();
+
     if (video.readyState >= 1) {
-      setupScroll();
+      onReady();
     } else {
-      video.addEventListener("loadedmetadata", setupScroll, { once: true });
+      video.addEventListener("loadedmetadata", onReady, { once: true });
     }
 
     return () => {
-      video.removeEventListener("loadedmetadata", setupScroll);
+      video.removeEventListener("loadedmetadata", onReady);
       if (refreshTimerOne) clearTimeout(refreshTimerOne);
       if (refreshTimerTwo) clearTimeout(refreshTimerTwo);
       if (trigger) trigger.kill();
