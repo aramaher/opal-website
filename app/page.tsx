@@ -407,7 +407,8 @@ export default function Home() {
   const [lang, setLang] = useState<Lang>("fa");
   const [activeStage, setActiveStage] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-
+  const [mobilePlayBlocked, setMobilePlayBlocked] = useState(false);
+  
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [vehicle, setVehicle] = useState("");
@@ -663,19 +664,20 @@ const videoSrc = useMemo(
       <section ref={heroRef} className="hero-section relative h-screen">
         <div className="relative h-screen overflow-hidden bg-black">
         <video
-         key={videoSrc}
-         ref={videoRef}
-         src={videoSrc}
-         poster="/hero-poster.jpg"
-         muted
-         playsInline
-         autoPlay={isMobile}
-         loop={isMobile}
-         preload="auto"
-         disablePictureInPicture
-         controls={false}
-         className="hero-video absolute inset-0 h-full w-full object-cover"
-           />
+        key={videoSrc}
+        ref={videoRef}
+        src={videoSrc}
+        poster="/hero-poster.jpg"
+        muted
+        playsInline
+        autoPlay={isMobile}
+        loop={isMobile}
+        preload="auto"
+        disablePictureInPicture
+        controls={false}
+        onPlay={() => setMobilePlayBlocked(false)}
+        className="hero-video absolute inset-0 h-full w-full object-cover"
+        />
           
           <div className="pointer-events-none absolute inset-0 bg-black/[0.04]" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/50 to-transparent md:h-36" />
