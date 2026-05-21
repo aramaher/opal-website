@@ -357,7 +357,6 @@ export default function Home() {
   const stageRef = useRef(0);
 
   const [lang, setLang] = useState<Lang>("fa");
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [stageIndex, setStageIndex] = useState(0);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -375,15 +374,8 @@ export default function Home() {
   }, [lang, zoneItems]);
 
   useLayoutEffect(() => {
-    const media = window.matchMedia("(max-width: 768px)");
-    const sync = () => setIsMobile(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, []);
-
-  useLayoutEffect(() => {
-    if (isMobile !== false || !heroRef.current || !progressRef.current) return;
+    const media = window.matchMedia("(max-width: 980px)");
+    if (media.matches || !heroRef.current || !progressRef.current) return;
 
     const hero = heroRef.current;
     const progress = progressRef.current;
@@ -440,7 +432,7 @@ export default function Home() {
       video?.removeEventListener("loadedmetadata", createTrigger);
       trigger?.kill();
     };
-  }, [isMobile, lang, t.stages.length]);
+  }, [lang, t.stages.length]);
 
   const sendForm = useCallback(
     (event: FormEvent) => {
@@ -476,62 +468,60 @@ export default function Home() {
         </div>
       </header>
 
-      {isMobile === false ? (
-        <section id="top" ref={heroRef} className="hero">
-          <div className="heroMedia">
-            <video
-              ref={videoRef}
-              src="/hero.mp4?v=80"
-              poster="/hero-poster.jpg"
-              muted
-              playsInline
-              preload="metadata"
-              className="heroAsset"
-            />
-            <div className="heroShade" />
-            <div className="progress">
-              <div ref={progressRef} />
+      <section id="top" ref={heroRef} className="hero">
+        <div className="heroMedia">
+          <video
+            ref={videoRef}
+            src="/hero.mp4?v=80"
+            poster="/hero-poster.jpg"
+            muted
+            playsInline
+            preload="metadata"
+            className="heroAsset"
+          />
+          <div className="heroShade" />
+          <div className="progress">
+            <div ref={progressRef} />
+          </div>
+          <div className="heroContent">
+            <div className="heroMeta">
+              <span>{t.heroSmall}</span>
+              <span>
+                {String(stageIndex + 1).padStart(2, "0")} / {String(t.stages.length).padStart(2, "0")}
+              </span>
             </div>
-            <div className="heroContent">
+            <div key={`${lang}-${stageIndex}`} className="heroText">
+              <p>{stage.eyebrow}</p>
+              <h1>{stage.title}</h1>
+              <span>{stage.desc}</span>
+            </div>
+          </div>
+          <div className="scrollHint">
+            <span>{t.scroll}</span>
+            <i />
+          </div>
+        </div>
+      </section>
+
+      <section className="mobileHero" aria-label="OPAL mobile hero">
+        {t.stages.map((item, index) => (
+          <article className="mobileHeroPanel" key={item.eyebrow}>
+            <MobileHeroImage index={index} alt="OPAL vehicle import" />
+            <div className="mobileHeroShade" />
+            <div className="mobileHeroText">
               <div className="heroMeta">
                 <span>{t.heroSmall}</span>
                 <span>
-                  {String(stageIndex + 1).padStart(2, "0")} / {String(t.stages.length).padStart(2, "0")}
+                  {String(index + 1).padStart(2, "0")} / {String(t.stages.length).padStart(2, "0")}
                 </span>
               </div>
-              <div key={`${lang}-${stageIndex}`} className="heroText">
-                <p>{stage.eyebrow}</p>
-                <h1>{stage.title}</h1>
-                <span>{stage.desc}</span>
-              </div>
+              <p>{item.eyebrow}</p>
+              <h1>{item.title}</h1>
+              <span>{item.desc}</span>
             </div>
-            <div className="scrollHint">
-              <span>{t.scroll}</span>
-              <i />
-            </div>
-          </div>
-        </section>
-      ) : (
-        <section id="top" className="mobileHero" aria-label="OPAL mobile hero">
-          {t.stages.map((item, index) => (
-            <article className="mobileHeroPanel" key={item.eyebrow}>
-              <MobileHeroImage index={index} alt="OPAL vehicle import" />
-              <div className="mobileHeroShade" />
-              <div className="mobileHeroText">
-                <div className="heroMeta">
-                  <span>{t.heroSmall}</span>
-                  <span>
-                    {String(index + 1).padStart(2, "0")} / {String(t.stages.length).padStart(2, "0")}
-                  </span>
-                </div>
-                <p>{item.eyebrow}</p>
-                <h1>{item.title}</h1>
-                <span>{item.desc}</span>
-              </div>
-            </article>
-          ))}
-        </section>
-      )}
+          </article>
+        ))}
+      </section>
 
       <Section
         id="services"
