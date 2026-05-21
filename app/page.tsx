@@ -1,3 +1,5 @@
+"use client";
+
 import {
   useCallback,
   useEffect,
@@ -742,4 +744,3 @@ export default function Home() {
     </main>
   );
 }
-```
