@@ -357,7 +357,9 @@ export default function Home() {
   const stageRef = useRef(0);
 
   const [lang, setLang] = useState<Lang>("fa");
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  const [isMobile, setIsMobile] = useState<boolean>(() =>
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 768px)").matches : false,
+  );
   const [stageIndex, setStageIndex] = useState(0);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
