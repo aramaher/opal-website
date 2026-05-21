@@ -431,7 +431,7 @@ export default function Home() {
   const stage = t.stages[activeStage];
 
   const videoSrc = useMemo(
-    () => (isMobile ? "/hero-mobile.mp4?v=41" : "/hero.mp4?v=41"),
+    () => (isMobile ? "/hero-mobile.mp4?v=50" : "/hero.mp4?v=50"),
     [isMobile],
   );
 
@@ -489,7 +489,6 @@ export default function Home() {
     setActiveStage(0);
     progressBar.style.transform = "scaleX(0)";
 
-    // Mobile: no GSAP video scrub. Just play the video normally.
     if (isMobile) {
       video.loop = true;
       video.autoplay = true;
@@ -525,7 +524,6 @@ export default function Home() {
       };
     }
 
-    // Desktop: scroll-controlled video.
     video.loop = false;
     video.autoplay = false;
     video.pause();
@@ -604,6 +602,7 @@ export default function Home() {
       if (trigger) trigger.kill();
     };
   }, [lang, t.stages.length, isMobile, videoSrc]);
+
   const sendForm = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
@@ -682,7 +681,6 @@ export default function Home() {
         </div>
       </header>
 
-      {/* —— Hero (pinned scroll timeline) —— */}
       <section ref={heroRef} className="hero-section relative h-screen">
         <div className="relative h-screen overflow-hidden bg-black">
           <video
@@ -791,7 +789,6 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* —— Services —— */}
       <SectionShell id="services" bg={BG.services}>
         <Reveal>
           <SectionHeading
@@ -820,7 +817,6 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* —— Free Zones —— */}
       <SectionShell id="zones" bg={BG.zones}>
         <Reveal>
           <SectionHeading
@@ -856,7 +852,6 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* —— Process —— */}
       <SectionShell id="process" bg={BG.process}>
         <Reveal>
           <SectionHeading
@@ -886,7 +881,6 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* —— Shipping —— */}
       <SectionShell id="shipping" bg={BG.shipping}>
         <Reveal>
           <SectionHeading
@@ -915,7 +909,6 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* —— Car Listings —— */}
       <SectionShell id="listings" bg={BG.listings}>
         <Reveal>
           <SectionHeading
@@ -967,7 +960,6 @@ export default function Home() {
 
       <SectionDivider />
 
-      {/* —— Contact —— */}
       <SectionShell id="contact" bg={BG.contact}>
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
           <Reveal>
