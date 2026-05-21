@@ -28,6 +28,15 @@ const BG = {
   contact: "/images/backgrounds/contact-bg.jpg",
 } as const;
 
+const MOBILE_HERO_IMAGES = [
+  "/hero-photo1.jpg",
+  "/hero-photo2.jpg",
+  "/hero-photo3.jpg",
+  "/hero-photo4.jpg",
+  "/hero-photo5.jpg",
+  "/hero-photo6.jpg",
+] as const;
+
 function waUrl(text: string) {
   return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
 }
@@ -418,7 +427,7 @@ export default function Home() {
   const [lang, setLang] = useState<Lang>("fa");
   const [activeStage, setActiveStage] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const [mobilePlayBlocked, setMobilePlayBlocked] = useState(false);
+  const [mobileFrame, setMobileFrame] = useState(0);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -430,10 +439,9 @@ export default function Home() {
   const isFa = lang === "fa";
   const stage = t.stages[activeStage];
 
-  const videoSrc = useMemo(
-    () => (isMobile ? "/hero-mobile.mp4?v=50" : "/hero.mp4?v=50"),
-    [isMobile],
-  );
+  const videoSrc = useMemo(() => "/hero.mp4?v=70", []);
+  const mobileHeroImage =
+    MOBILE_HERO_IMAGES[mobileFrame] ?? MOBILE_HERO_IMAGES[0];
 
   useEffect(() => {
     setZone(t.zoneOptions[0]);
@@ -476,54 +484,71 @@ export default function Home() {
 
   useEffect(() => {
     const hero = heroRef.current;
-    const video = videoRef.current;
     const progressBar = progressBarRef.current;
 
-    if (!hero || !video || !progressBar) return;
-
-    video.muted = true;
-    video.playsInline = true;
-    video.preload = "auto";
+    if (!hero || !progressBar) return;
 
     activeStageRef.current = 0;
     setActiveStage(0);
     progressBar.style.transform = "scaleX(0)";
 
+    let trigger: ScrollTrigger | null = null;
+    let refreshTimerOne: ReturnType<typeof setTimeout> | null = null;
+    let refreshTimerTwo: ReturnType<typeof setTimeout> | null = null;
+
     if (isMobile) {
-      video.loop = true;
-      video.autoplay = true;
-      video.muted = true;
-      video.playsInline = true;
-      video.preload = "auto";
-      video.load();
+      setMobileFrame(0);
 
-      const tryPlay = () => {
-        video
-          .play()
-          .then(() => {
-            setMobilePlayBlocked(false);
-          })
-          .catch(() => {
-            setMobilePlayBlocked(true);
-          });
-      };
+      trigger = ScrollTrigger.create({
+        trigger: hero,
+        start: "top top",
+        end: "+=4300",
+        scrub: 0.45,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const p = self.progress;
 
-      const timer = setTimeout(tryPlay, 250);
+          progressBar.style.transform = `scaleX(${p})`;
 
-      window.addEventListener("touchstart", tryPlay, { once: true });
-      window.addEventListener("click", tryPlay, { once: true });
-      window.addEventListener("pointerdown", tryPlay, { once: true });
+          const nextStage = Math.min(
+            t.stages.length - 1,
+            Math.floor(p * t.stages.length),
+          );
 
-      progressBar.style.transform = "scaleX(1)";
+          const nextFrame = Math.min(
+            MOBILE_HERO_IMAGES.length - 1,
+            Math.floor(p * MOBILE_HERO_IMAGES.length),
+          );
+
+          if (nextStage !== activeStageRef.current) {
+            activeStageRef.current = nextStage;
+            setActiveStage(nextStage);
+          }
+
+          setMobileFrame(nextFrame);
+        },
+      });
+
+      ScrollTrigger.refresh(true);
+      refreshTimerOne = setTimeout(() => ScrollTrigger.refresh(true), 500);
+      refreshTimerTwo = setTimeout(() => ScrollTrigger.refresh(true), 1200);
 
       return () => {
-        clearTimeout(timer);
-        window.removeEventListener("touchstart", tryPlay);
-        window.removeEventListener("click", tryPlay);
-        window.removeEventListener("pointerdown", tryPlay);
+        if (refreshTimerOne) clearTimeout(refreshTimerOne);
+        if (refreshTimerTwo) clearTimeout(refreshTimerTwo);
+        if (trigger) trigger.kill();
       };
     }
 
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = "auto";
     video.loop = false;
     video.autoplay = false;
     video.pause();
@@ -533,10 +558,6 @@ export default function Home() {
     } catch {
       // Ignore seek errors before metadata.
     }
-
-    let trigger: ScrollTrigger | null = null;
-    let refreshTimerOne: ReturnType<typeof setTimeout> | null = null;
-    let refreshTimerTwo: ReturnType<typeof setTimeout> | null = null;
 
     const setupScroll = () => {
       if (trigger) trigger.kill();
@@ -683,56 +704,28 @@ export default function Home() {
 
       <section ref={heroRef} className="hero-section relative h-screen">
         <div className="relative h-screen overflow-hidden bg-black">
-          <video
-            key={videoSrc}
-            ref={videoRef}
-            src={videoSrc}
-            poster="/hero-poster.jpg"
-            muted
-            playsInline
-            autoPlay={isMobile}
-            loop={isMobile}
-            preload="auto"
-            disablePictureInPicture
-            controls={false}
-            onPlay={() => setMobilePlayBlocked(false)}
-            onCanPlay={() => {
-              if (!isMobile) return;
-
-              const video = videoRef.current;
-              if (!video) return;
-
-              video
-                .play()
-                .then(() => setMobilePlayBlocked(false))
-                .catch(() => setMobilePlayBlocked(true));
-            }}
-            className="hero-video absolute inset-0 h-full w-full object-cover"
-          />
-
-          {isMobile && mobilePlayBlocked ? (
-            <button
-              type="button"
-              onClick={() => {
-                const video = videoRef.current;
-                if (!video) return;
-
-                video.muted = true;
-                video.playsInline = true;
-
-                video
-                  .play()
-                  .then(() => setMobilePlayBlocked(false))
-                  .catch(() => setMobilePlayBlocked(true));
-              }}
-              className="absolute inset-0 z-[70] flex items-center justify-center bg-black/35 text-white"
-              aria-label="Play hero video"
-            >
-              <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-black/45 text-2xl backdrop-blur-md">
-                ▶
-              </span>
-            </button>
-          ) : null}
+          {isMobile ? (
+            <img
+              key={mobileHeroImage}
+              src={mobileHeroImage}
+              alt="OPAL Dubai to Iran vehicle import"
+              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
+              loading="eager"
+            />
+          ) : (
+            <video
+              key={videoSrc}
+              ref={videoRef}
+              src={videoSrc}
+              poster="/hero-poster.jpg"
+              muted
+              playsInline
+              preload="auto"
+              disablePictureInPicture
+              controls={false}
+              className="hero-video absolute inset-0 h-full w-full object-cover"
+            />
+          )}
 
           <div className="pointer-events-none absolute inset-0 bg-black/[0.04]" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/50 to-transparent md:h-36" />
