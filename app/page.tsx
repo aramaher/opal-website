@@ -27,6 +27,33 @@ const heroImages = [
   "/hero-photo6.jpg",
 ] as const;
 
+const mobileHeroImageFallbacks = heroImages.map((src, index) => {
+  const n = index + 1;
+  return [
+    src,
+    `/hero-photo${n}.jpeg`,
+    `/hero-photo${n}.png`,
+    `/hero-photo${n}.webp`,
+    `/images/hero-photo${n}.jpg`,
+    `/images/hero-photo${n}.jpeg`,
+    `/images/hero-photo${n}.png`,
+    `/images/hero-photo${n}.webp`,
+    `/images/hero/hero-photo${n}.jpg`,
+    `/images/hero/hero-photo${n}.jpeg`,
+    `/images/hero/hero-photo${n}.png`,
+    `/images/hero/hero-photo${n}.webp`,
+    `/images/hero/mobile-${n}.jpg`,
+    `/images/hero/mobile-${n}.jpeg`,
+    `/images/hero/mobile-${n}.png`,
+    `/images/hero/mobile-${n}.webp`,
+    "/hero-poster.jpg",
+    "/hero-poster.jpeg",
+    "/hero-poster.png",
+    "/hero-poster.webp",
+    "/logo.png",
+  ];
+});
+
 const sectionBg = {
   services: "/images/backgrounds/services-bg.jpg",
   zones: "/images/backgrounds/zones-bg.jpg",
@@ -295,6 +322,34 @@ function Section({
   );
 }
 
+function MobileHeroImage({
+  index,
+  alt,
+}: {
+  index: number;
+  alt: string;
+}) {
+  const sources = mobileHeroImageFallbacks[index] ?? mobileHeroImageFallbacks[0];
+  const [sourceIndex, setSourceIndex] = useState(0);
+
+  useEffect(() => {
+    setSourceIndex(0);
+  }, [index]);
+
+  return (
+    <img
+      src={sources[sourceIndex]}
+      alt={alt}
+      loading={index === 0 ? "eager" : "lazy"}
+      onError={() => {
+        setSourceIndex((current) =>
+          current < sources.length - 1 ? current + 1 : current,
+        );
+      }}
+    />
+  );
+}
+
 export default function Home() {
   const heroRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -460,7 +515,7 @@ export default function Home() {
         <section id="top" className="mobileHero" aria-label="OPAL mobile hero">
           {t.stages.map((item, index) => (
             <article className="mobileHeroPanel" key={item.eyebrow}>
-              <img src={heroImages[index]} alt="OPAL vehicle import" />
+              <MobileHeroImage index={index} alt="OPAL vehicle import" />
               <div className="mobileHeroShade" />
               <div className="mobileHeroText">
                 <div className="heroMeta">
