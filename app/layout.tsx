@@ -37,7 +37,7 @@ export default function RootLayout({
                 --foreground: #ededed;
                 --accent-red: #e10600;
                 --accent-green: #00a651;
-                --border: rgba(255,255,255,0.1);
+                --border: rgba(255,255,255,0.10);
               }
 
               * {
@@ -45,21 +45,25 @@ export default function RootLayout({
               }
 
               html {
+                width: 100%;
+                min-height: 100%;
                 scroll-behavior: auto;
                 background: #050505;
-                width: 100%;
                 overflow-x: hidden;
+                -webkit-text-size-adjust: 100%;
               }
 
               body {
                 margin: 0;
                 width: 100%;
+                min-height: 100%;
                 background: var(--background);
                 color: var(--foreground);
                 font-family: Arial, Helvetica, sans-serif;
                 overflow-x: hidden;
                 -webkit-font-smoothing: antialiased;
                 -moz-osx-font-smoothing: grayscale;
+                text-rendering: geometricPrecision;
               }
 
               a {
@@ -77,6 +81,7 @@ export default function RootLayout({
               img,
               video {
                 max-width: 100%;
+                display: block;
               }
 
               ::selection {
@@ -86,12 +91,12 @@ export default function RootLayout({
 
               .hero-section {
                 background: #050505;
+                contain: layout paint;
               }
 
               .hero-video {
                 transform: translateZ(0);
                 backface-visibility: hidden;
-                will-change: transform;
                 background: #000;
               }
 
@@ -108,19 +113,17 @@ export default function RootLayout({
               @keyframes heroText {
                 0% {
                   opacity: 0;
-                  transform: translateY(26px) scale(0.985);
-                  filter: blur(8px);
+                  transform: translateY(18px);
                 }
 
                 100% {
                   opacity: 1;
-                  transform: translateY(0) scale(1);
-                  filter: blur(0);
+                  transform: translateY(0);
                 }
               }
 
               .animate-heroText {
-                animation: heroText 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                animation: heroText 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
               }
 
               @keyframes scrollLine {
@@ -143,6 +146,8 @@ export default function RootLayout({
                 overflow: hidden;
                 background: #050505;
                 color: #ededed;
+                content-visibility: auto;
+                contain-intrinsic-size: 900px;
               }
 
               .section-shell__bg {
@@ -151,8 +156,8 @@ export default function RootLayout({
                 z-index: 0;
                 background-size: cover;
                 background-position: center;
-                opacity: 0.38;
-                transform: scale(1.03) translateZ(0);
+                opacity: 0.34;
+                transform: translateZ(0);
                 pointer-events: none;
               }
 
@@ -161,8 +166,8 @@ export default function RootLayout({
                 inset: 0;
                 z-index: 1;
                 background:
-                  radial-gradient(circle at 20% 20%, rgba(225, 6, 0, 0.13), transparent 28%),
-                  radial-gradient(circle at 80% 70%, rgba(0, 166, 81, 0.12), transparent 30%),
+                  radial-gradient(circle at 20% 20%, rgba(225, 6, 0, 0.10), transparent 28%),
+                  radial-gradient(circle at 80% 70%, rgba(0, 166, 81, 0.10), transparent 30%),
                   linear-gradient(180deg, rgba(0, 0, 0, 0.78), rgba(5, 5, 5, 0.92));
                 pointer-events: none;
               }
@@ -179,7 +184,7 @@ export default function RootLayout({
                 align-items: center;
                 justify-content: center;
                 padding: 0 1.5rem;
-                height: 4.5rem;
+                height: 4rem;
                 background: #050505;
                 overflow: hidden;
               }
@@ -191,14 +196,11 @@ export default function RootLayout({
                 background: linear-gradient(
                   90deg,
                   transparent 0%,
-                  rgba(225, 6, 0, 0.45) 18%,
-                  rgba(255, 255, 255, 0.28) 50%,
-                  rgba(0, 166, 81, 0.45) 82%,
+                  rgba(225, 6, 0, 0.42) 18%,
+                  rgba(255, 255, 255, 0.24) 50%,
+                  rgba(0, 166, 81, 0.42) 82%,
                   transparent 100%
                 );
-                box-shadow:
-                  0 0 18px rgba(225, 6, 0, 0.28),
-                  0 0 18px rgba(0, 166, 81, 0.25);
               }
 
               .section-divider__line::before {
@@ -208,12 +210,12 @@ export default function RootLayout({
                 background: linear-gradient(
                   90deg,
                   transparent,
-                  rgba(225, 6, 0, 0.15),
-                  rgba(0, 166, 81, 0.15),
+                  rgba(225, 6, 0, 0.12),
+                  rgba(0, 166, 81, 0.12),
                   transparent
                 );
-                filter: blur(6px);
-                opacity: 0.9;
+                filter: blur(4px);
+                opacity: 0.75;
               }
 
               .section-divider__gem {
@@ -224,17 +226,14 @@ export default function RootLayout({
                 height: 6px;
                 transform: translate(-50%, -50%) rotate(45deg);
                 background: #ededed;
-                box-shadow:
-                  0 0 12px rgba(225, 6, 0, 0.45),
-                  0 0 12px rgba(0, 166, 81, 0.35);
               }
 
               .reveal {
                 opacity: 0;
-                transform: translate3d(0, 24px, 0);
+                transform: translate3d(0, 18px, 0);
                 transition:
-                  opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-                  transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+                  opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
               }
 
               .reveal--visible {
@@ -246,9 +245,9 @@ export default function RootLayout({
                 position: relative;
                 overflow: hidden;
                 transition:
-                  transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-                  border-color 0.35s ease,
-                  background-color 0.35s ease;
+                  transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                  border-color 0.25s ease,
+                  background-color 0.25s ease;
               }
 
               .luxury-card::before {
@@ -258,28 +257,28 @@ export default function RootLayout({
                 background: linear-gradient(
                   120deg,
                   transparent,
-                  rgba(255, 255, 255, 0.08),
+                  rgba(255, 255, 255, 0.055),
                   transparent
                 );
-                transform: translateX(-100%);
-                transition: transform 0.75s ease;
+                transform: translateX(-110%);
+                transition: transform 0.55s ease;
                 pointer-events: none;
               }
 
               .luxury-card:hover {
-                transform: translateY(-4px);
+                transform: translateY(-3px);
               }
 
               .luxury-card:hover::before {
-                transform: translateX(100%);
+                transform: translateX(110%);
               }
 
               .glass-panel {
-                background: rgba(5, 5, 5, 0.55);
+                background: rgba(5, 5, 5, 0.62);
                 border: 1px solid var(--border);
-                backdrop-filter: blur(18px);
-                -webkit-backdrop-filter: blur(18px);
-                box-shadow: 0 24px 80px rgba(0,0,0,0.22);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                box-shadow: 0 18px 55px rgba(0,0,0,0.18);
               }
 
               .field-input {
@@ -290,7 +289,7 @@ export default function RootLayout({
                 padding: 1rem 1.25rem;
                 color: #fff;
                 outline: none;
-                transition: border-color 0.25s ease, background 0.25s ease;
+                transition: border-color 0.2s ease, background 0.2s ease;
               }
 
               .field-input::placeholder {
@@ -306,18 +305,18 @@ export default function RootLayout({
                 border: 1px solid rgba(0,166,81,0.45);
                 background: linear-gradient(135deg, rgba(0,166,81,0.95), rgba(0,120,60,0.95));
                 color: #fff;
-                box-shadow: 0 18px 50px rgba(0,166,81,0.18);
+                box-shadow: 0 14px 36px rgba(0,166,81,0.16);
                 transition:
-                  background 0.25s ease,
-                  transform 0.25s ease,
-                  box-shadow 0.25s ease,
-                  border-color 0.25s ease;
+                  background 0.22s ease,
+                  transform 0.22s ease,
+                  box-shadow 0.22s ease,
+                  border-color 0.22s ease;
               }
 
               .btn-whatsapp:hover {
                 transform: translateY(-2px);
                 border-color: rgba(255,255,255,0.5);
-                box-shadow: 0 24px 70px rgba(0,166,81,0.28);
+                box-shadow: 0 18px 48px rgba(0,166,81,0.22);
               }
 
               .process-timeline {
@@ -356,12 +355,12 @@ export default function RootLayout({
                 height: 10px;
                 border-radius: 50%;
                 background: var(--accent-red);
-                box-shadow: 0 0 14px rgba(225,6,0,0.5);
+                box-shadow: 0 0 12px rgba(225,6,0,0.42);
                 margin-bottom: 1rem;
               }
 
               .car-card {
-                box-shadow: 0 30px 100px rgba(0,0,0,0.35);
+                box-shadow: 0 22px 68px rgba(0,0,0,0.28);
               }
 
               .car-card__image-wrap {
@@ -376,12 +375,12 @@ export default function RootLayout({
                 width: 100%;
                 height: 100%;
                 object-fit: cover;
-                transform: scale(1.02);
-                transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+                transform: scale(1.015);
+                transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
               }
 
               .car-card:hover .car-card__image {
-                transform: scale(1.06);
+                transform: scale(1.045);
               }
 
               .lang-active {
@@ -416,36 +415,40 @@ export default function RootLayout({
                 }
 
                 header {
-                  min-height: 64px !important;
+                  min-height: 58px !important;
+                  background: rgba(0,0,0,0.54) !important;
+                  backdrop-filter: blur(8px) !important;
+                  -webkit-backdrop-filter: blur(8px) !important;
                 }
 
                 header > div {
-                  height: 64px !important;
-                  padding-left: 18px !important;
-                  padding-right: 18px !important;
+                  height: 58px !important;
+                  padding-left: 14px !important;
+                  padding-right: 14px !important;
                 }
 
                 header img {
-                  height: 26px !important;
-                  max-width: 92px !important;
+                  height: 22px !important;
+                  max-width: 82px !important;
                   object-fit: contain !important;
                 }
 
                 header button {
-                  font-size: 10px !important;
-                  padding: 7px 11px !important;
+                  font-size: 9px !important;
+                  padding: 6px 9px !important;
+                  letter-spacing: 0.14em !important;
                 }
 
                 .hero-section {
                   height: 100svh !important;
-                  min-height: 620px !important;
+                  min-height: 590px !important;
                   overflow: hidden !important;
                   background: #050505 !important;
                 }
 
                 .hero-section > div {
                   height: 100svh !important;
-                  min-height: 620px !important;
+                  min-height: 590px !important;
                   overflow: hidden !important;
                   background: #050505 !important;
                 }
@@ -459,9 +462,9 @@ export default function RootLayout({
                 }
 
                 .hero-section .max-w-7xl {
-                  padding-left: 22px !important;
-                  padding-right: 22px !important;
-                  padding-bottom: 92px !important;
+                  padding-left: 18px !important;
+                  padding-right: 18px !important;
+                  padding-bottom: 82px !important;
                 }
 
                 .hero-copy {
@@ -470,15 +473,15 @@ export default function RootLayout({
 
                 .hero-copy h1,
                 .hero-section h1 {
-                  font-size: clamp(42px, 13vw, 68px) !important;
-                  line-height: 1.08 !important;
-                  letter-spacing: -0.04em !important;
+                  font-size: clamp(34px, 11vw, 52px) !important;
+                  line-height: 1.12 !important;
+                  letter-spacing: -0.035em !important;
                 }
 
                 .hero-copy p,
                 .hero-section p {
-                  font-size: 13px !important;
-                  line-height: 1.9 !important;
+                  font-size: 12px !important;
+                  line-height: 1.75 !important;
                 }
 
                 .pin-spacer {
@@ -489,29 +492,28 @@ export default function RootLayout({
                 .section-shell {
                   min-height: auto !important;
                   overflow: hidden !important;
+                  content-visibility: visible !important;
                 }
 
                 .section-shell__inner {
                   min-height: auto !important;
-                  padding: 88px 18px !important;
+                  padding: 76px 16px !important;
                 }
 
                 .section-shell__bg {
-                  opacity: 0.28 !important;
-                  transform: scale(1.08) !important;
+                  opacity: 0.24 !important;
+                  transform: none !important;
                   background-position: center center !important;
                 }
 
                 .section-shell__overlay {
                   background:
-                    radial-gradient(circle at 18% 20%, rgba(225,6,0,0.1), transparent 26%),
-                    radial-gradient(circle at 82% 75%, rgba(0,166,81,0.1), transparent 28%),
-                    linear-gradient(180deg, rgba(0,0,0,0.82), rgba(5,5,5,0.94)) !important;
+                    linear-gradient(180deg, rgba(0,0,0,0.84), rgba(5,5,5,0.95)) !important;
                 }
 
                 .section-divider {
-                  height: 46px !important;
-                  padding: 0 18px !important;
+                  height: 38px !important;
+                  padding: 0 16px !important;
                 }
 
                 .section-divider__line {
@@ -519,19 +521,19 @@ export default function RootLayout({
                 }
 
                 .section-shell h2 {
-                  font-size: clamp(30px, 9vw, 42px) !important;
+                  font-size: clamp(28px, 8vw, 38px) !important;
                   line-height: 1.18 !important;
-                  margin-bottom: 18px !important;
+                  margin-bottom: 14px !important;
                 }
 
                 .section-shell p {
-                  font-size: 14px !important;
-                  line-height: 1.9 !important;
+                  font-size: 13px !important;
+                  line-height: 1.8 !important;
                 }
 
                 .section-shell .grid {
                   grid-template-columns: 1fr !important;
-                  gap: 16px !important;
+                  gap: 14px !important;
                 }
 
                 #zones .grid {
@@ -541,21 +543,22 @@ export default function RootLayout({
                 .glass-panel,
                 .luxury-card,
                 .car-card {
-                  border-radius: 20px !important;
+                  border-radius: 18px !important;
                 }
 
                 .glass-panel {
-                  background: rgba(5, 5, 5, 0.68) !important;
-                  backdrop-filter: blur(12px) !important;
-                  -webkit-backdrop-filter: blur(12px) !important;
+                  background: rgba(5, 5, 5, 0.72) !important;
+                  backdrop-filter: blur(6px) !important;
+                  -webkit-backdrop-filter: blur(6px) !important;
+                  box-shadow: 0 14px 36px rgba(0,0,0,0.18) !important;
                 }
 
                 .luxury-card {
-                  padding: 22px !important;
+                  padding: 18px !important;
                 }
 
                 .luxury-card h3 {
-                  font-size: 20px !important;
+                  font-size: 18px !important;
                   line-height: 1.35 !important;
                 }
 
@@ -566,7 +569,7 @@ export default function RootLayout({
                 .car-card__image-wrap {
                   aspect-ratio: 16 / 11 !important;
                   height: auto !important;
-                  min-height: 210px !important;
+                  min-height: 190px !important;
                 }
 
                 .car-card__image {
@@ -579,35 +582,35 @@ export default function RootLayout({
                   width: 100% !important;
                   justify-content: center !important;
                   text-align: center !important;
-                  padding: 14px 18px !important;
+                  padding: 13px 16px !important;
                 }
 
                 #contact form {
-                  padding: 20px !important;
+                  padding: 18px !important;
                 }
 
                 .field-input {
-                  min-height: 52px !important;
-                  font-size: 15px !important;
-                  border-radius: 16px !important;
+                  min-height: 50px !important;
+                  font-size: 14px !important;
+                  border-radius: 15px !important;
                 }
 
                 textarea.field-input {
-                  min-height: 120px !important;
+                  min-height: 110px !important;
                 }
 
                 .btn-whatsapp {
-                  min-height: 50px !important;
-                  font-size: 11px !important;
-                  letter-spacing: 0.12em !important;
+                  min-height: 48px !important;
+                  font-size: 10px !important;
+                  letter-spacing: 0.10em !important;
                 }
 
                 footer {
-                  padding: 34px 18px !important;
+                  padding: 30px 16px !important;
                 }
 
                 footer img {
-                  height: 36px !important;
+                  height: 32px !important;
                 }
 
                 footer p {
@@ -616,7 +619,13 @@ export default function RootLayout({
                 }
 
                 .reveal {
-                  transform: translateY(22px);
+                  transform: translateY(16px);
+                }
+
+                .luxury-card:hover,
+                .btn-whatsapp:hover,
+                .car-card:hover .car-card__image {
+                  transform: none !important;
                 }
               }
 
@@ -626,6 +635,11 @@ export default function RootLayout({
                   opacity: 1;
                   transform: none;
                   transition: none;
+                }
+
+                .animate-heroText,
+                .animate-scrollLine {
+                  animation: none;
                 }
               }
             `,
