@@ -10,6 +10,10 @@ import {
   type ElementType,
   type ReactNode,
 } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 type Lang = "fa" | "en";
 
@@ -82,11 +86,6 @@ const content = {
         eyebrow: "FINAL DELIVERY",
         title: "تحویل نهایی",
         desc: "پیگیری مراحل پایانی و تحویل خودرو به مشتری با گزارش‌دهی شفاف.",
-      },
-      {
-        eyebrow: "START NOW",
-        title: "شروع درخواست",
-        desc: "مدل خودرو و مقصد را ارسال کنید تا مسیر مناسب واردات برای شما بررسی شود.",
       },
     ],
     servicesLabel: "خدمات OPAL",
@@ -197,11 +196,6 @@ const content = {
         eyebrow: "FINAL DELIVERY",
         title: "Final Delivery",
         desc: "Final coordination and vehicle delivery with transparent updates.",
-      },
-      {
-        eyebrow: "START NOW",
-        title: "Start Your Import",
-        desc: "Send the vehicle model and destination so we can review the best route.",
       },
     ],
     servicesLabel: "OPAL Services",
@@ -422,7 +416,7 @@ export default function Home() {
 
   const [lang, setLang] = useState<Lang>("fa");
   const [activeStage, setActiveStage] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [mobileFrame, setMobileFrame] = useState(0);
 
   const [name, setName] = useState("");
@@ -435,7 +429,7 @@ export default function Home() {
   const isFa = lang === "fa";
   const stage = t.stages[activeStage];
 
-  const videoSrc = useMemo(() => "/hero.mp4?v=90", []);
+  const videoSrc = useMemo(() => "/hero.mp4?v=70", []);
   const mobileHeroImage =
     MOBILE_HERO_IMAGES[mobileFrame] ?? MOBILE_HERO_IMAGES[0];
 
@@ -450,7 +444,14 @@ export default function Home() {
 
     const resetPage = () => {
       window.scrollTo(0, 0);
-      setTimeout(() => window.scrollTo(0, 0), 200);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        ScrollTrigger.refresh(true);
+      }, 250);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        ScrollTrigger.refresh(true);
+      }, 800);
     };
 
     resetPage();
@@ -472,158 +473,143 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    let killed = false;
-    let trigger: any = null;
+    const hero = heroRef.current;
+    const progressBar = progressBarRef.current;
+
+    if (!hero || !progressBar) return;
+    if (isMobile === null) return;
+
+    activeStageRef.current = 0;
+    setActiveStage(0);
+    progressBar.style.transform = "scaleX(0)";
+
+    let trigger: ScrollTrigger | null = null;
     let refreshTimerOne: ReturnType<typeof setTimeout> | null = null;
     let refreshTimerTwo: ReturnType<typeof setTimeout> | null = null;
 
-    const init = async () => {
-      const hero = heroRef.current;
-      const progressBar = progressBarRef.current;
+    if (isMobile) {
+      setMobileFrame(0);
 
-      if (!hero || !progressBar) return;
+      trigger = ScrollTrigger.create({
+        trigger: hero,
+        start: "top top",
+        end: () =>
+          `+=${Math.max(window.innerHeight * (MOBILE_HERO_IMAGES.length - 1), 3200)}`,
+        scrub: 0.55,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const p = self.progress;
 
-      activeStageRef.current = 0;
-      setActiveStage(0);
-      progressBar.style.transform = "scaleX(0)";
+          progressBar.style.transform = `scaleX(${p})`;
 
-      const gsapModule = await import("gsap");
-      const scrollTriggerModule = await import("gsap/ScrollTrigger");
+          const nextStage = Math.min(
+            t.stages.length - 1,
+            Math.round(p * (t.stages.length - 1)),
+          );
 
-      if (killed) return;
+          const nextFrame = Math.min(
+            MOBILE_HERO_IMAGES.length - 1,
+            Math.round(p * (MOBILE_HERO_IMAGES.length - 1)),
+          );
 
-      const gsap = gsapModule.default;
-      const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+          if (nextStage !== activeStageRef.current) {
+            activeStageRef.current = nextStage;
+            setActiveStage(nextStage);
+          }
 
-      gsap.registerPlugin(ScrollTrigger);
+          setMobileFrame(nextFrame);
+        },
+      });
 
-      if (isMobile) {
-        setMobileFrame(0);
+      ScrollTrigger.refresh(true);
+      refreshTimerOne = setTimeout(() => ScrollTrigger.refresh(true), 500);
+      refreshTimerTwo = setTimeout(() => ScrollTrigger.refresh(true), 1200);
 
-        trigger = ScrollTrigger.create({
-          trigger: hero,
-          start: "top top",
-          end: "+=4300",
-          scrub: 0.45,
-          pin: true,
-          pinSpacing: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          onUpdate: (self: any) => {
-            const p = self.progress;
-
-            progressBar.style.transform = `scaleX(${p})`;
-
-            const nextStage = Math.min(
-              t.stages.length - 1,
-              Math.floor(p * t.stages.length),
-            );
-
-            const nextFrame = Math.min(
-              MOBILE_HERO_IMAGES.length - 1,
-              Math.floor(p * MOBILE_HERO_IMAGES.length),
-            );
-
-            if (nextStage !== activeStageRef.current) {
-              activeStageRef.current = nextStage;
-              setActiveStage(nextStage);
-            }
-
-            setMobileFrame(nextFrame);
-          },
-        });
-
-        ScrollTrigger.refresh(true);
-        refreshTimerOne = setTimeout(() => ScrollTrigger.refresh(true), 500);
-        refreshTimerTwo = setTimeout(() => ScrollTrigger.refresh(true), 1200);
-
-        return;
-      }
-
-      const video = videoRef.current;
-      if (!video) return;
-
-      video.muted = true;
-      video.playsInline = true;
-      video.preload = "auto";
-      video.loop = false;
-      video.autoplay = false;
-      video.pause();
-
-      try {
-        video.currentTime = 0;
-      } catch {
-        // Ignore seek errors before metadata.
-      }
-
-      const setupScroll = () => {
+      return () => {
+        if (refreshTimerOne) clearTimeout(refreshTimerOne);
+        if (refreshTimerTwo) clearTimeout(refreshTimerTwo);
         if (trigger) trigger.kill();
-
-        trigger = ScrollTrigger.create({
-          trigger: hero,
-          start: "top top",
-          end: "+=7600",
-          scrub: 0.65,
-          pin: true,
-          pinSpacing: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          onUpdate: (self: any) => {
-            const p = self.progress;
-
-            progressBar.style.transform = `scaleX(${p})`;
-
-            if (video.duration && Number.isFinite(video.duration)) {
-              const target =
-                p >= 1
-                  ? Math.max(0, video.duration - 0.001)
-                  : Math.max(0.001, video.duration * p);
-
-              if (Math.abs(video.currentTime - target) > 0.035) {
-                requestAnimationFrame(() => {
-                  try {
-                    video.currentTime = target;
-                  } catch {
-                    // Ignore Safari seek error.
-                  }
-                });
-              }
-            }
-
-            const nextStage = Math.min(
-              t.stages.length - 1,
-              Math.floor(p * t.stages.length),
-            );
-
-            if (nextStage !== activeStageRef.current) {
-              activeStageRef.current = nextStage;
-              setActiveStage(nextStage);
-            }
-          },
-        });
-
-        ScrollTrigger.refresh(true);
-        refreshTimerOne = setTimeout(() => ScrollTrigger.refresh(true), 500);
-        refreshTimerTwo = setTimeout(() => ScrollTrigger.refresh(true), 1200);
       };
+    }
 
-      if (video.readyState >= 1) {
-        setupScroll();
-      } else {
-        video.addEventListener("loadedmetadata", setupScroll, { once: true });
-      }
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = "metadata";
+    video.loop = false;
+    video.autoplay = false;
+    video.pause();
+
+    try {
+      video.currentTime = 0;
+    } catch {
+      // Ignore seek errors before metadata.
+    }
+
+    const setupScroll = () => {
+      if (trigger) trigger.kill();
+
+      trigger = ScrollTrigger.create({
+        trigger: hero,
+        start: "top top",
+        end: () => `+=${Math.max(window.innerHeight * 7, 5200)}`,
+        scrub: 0.65,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const p = self.progress;
+
+          progressBar.style.transform = `scaleX(${p})`;
+
+          if (video.duration && Number.isFinite(video.duration)) {
+            const target =
+              p >= 1
+                ? Math.max(0, video.duration - 0.001)
+                : Math.max(0.001, video.duration * p);
+
+            if (Math.abs(video.currentTime - target) > 0.035) {
+              requestAnimationFrame(() => {
+                try {
+                  video.currentTime = target;
+                } catch {
+                  // Ignore Safari seek error.
+                }
+              });
+            }
+          }
+
+          const nextStage = Math.min(
+            t.stages.length - 1,
+            Math.round(p * (t.stages.length - 1)),
+          );
+
+          if (nextStage !== activeStageRef.current) {
+            activeStageRef.current = nextStage;
+            setActiveStage(nextStage);
+          }
+        },
+      });
+
+      ScrollTrigger.refresh(true);
+      refreshTimerOne = setTimeout(() => ScrollTrigger.refresh(true), 500);
+      refreshTimerTwo = setTimeout(() => ScrollTrigger.refresh(true), 1200);
     };
 
-    init();
+    if (video.readyState >= 1) {
+      setupScroll();
+    } else {
+      video.addEventListener("loadedmetadata", setupScroll, { once: true });
+    }
 
     return () => {
-      killed = true;
-
-      const video = videoRef.current;
-      if (video) {
-        video.removeEventListener("loadedmetadata", () => {});
-      }
-
+      video.removeEventListener("loadedmetadata", setupScroll);
       if (refreshTimerOne) clearTimeout(refreshTimerOne);
       if (refreshTimerTwo) clearTimeout(refreshTimerTwo);
       if (trigger) trigger.kill();
@@ -692,7 +678,6 @@ export default function Home() {
                 EN
               </button>
             </div>
-
             <a
               href={waUrl(
                 isFa
@@ -711,12 +696,12 @@ export default function Home() {
 
       <section ref={heroRef} className="hero-section relative h-screen">
         <div className="relative h-screen overflow-hidden bg-black">
-          {isMobile ? (
+          {isMobile === null || isMobile ? (
             <img
               key={mobileHeroImage}
               src={mobileHeroImage}
               alt="OPAL Dubai to Iran vehicle import"
-              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
+              className="hero-mobile-image absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
               loading="eager"
             />
           ) : (
@@ -727,7 +712,7 @@ export default function Home() {
               poster="/hero-poster.jpg"
               muted
               playsInline
-              preload="auto"
+              preload="metadata"
               disablePictureInPicture
               controls={false}
               className="hero-video absolute inset-0 h-full w-full object-cover"
