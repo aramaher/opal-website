@@ -40,15 +40,20 @@ export default function RootLayout({
                 --border: rgba(255,255,255,0.1);
               }
 
-              * { box-sizing: border-box; }
+              * {
+                box-sizing: border-box;
+              }
 
               html {
                 scroll-behavior: auto;
                 background: #050505;
+                width: 100%;
+                overflow-x: hidden;
               }
 
               body {
                 margin: 0;
+                width: 100%;
                 background: var(--background);
                 color: var(--foreground);
                 font-family: Arial, Helvetica, sans-serif;
@@ -57,9 +62,31 @@ export default function RootLayout({
                 -moz-osx-font-smoothing: grayscale;
               }
 
-              a { color: inherit; text-decoration: none; }
-              button, input, textarea, select { font-family: inherit; }
-              img, video { max-width: 100%; }
+              a {
+                color: inherit;
+                text-decoration: none;
+              }
+
+              button,
+              input,
+              textarea,
+              select {
+                font-family: inherit;
+              }
+
+              img,
+              video {
+                max-width: 100%;
+              }
+
+              ::selection {
+                background: rgba(225, 6, 0, 0.35);
+                color: #fff;
+              }
+
+              .hero-section {
+                background: #050505;
+              }
 
               .hero-video {
                 transform: translateZ(0);
@@ -84,6 +111,7 @@ export default function RootLayout({
                   transform: translateY(26px) scale(0.985);
                   filter: blur(8px);
                 }
+
                 100% {
                   opacity: 1;
                   transform: translateY(0) scale(1);
@@ -96,8 +124,13 @@ export default function RootLayout({
               }
 
               @keyframes scrollLine {
-                0% { transform: translateY(-100%); }
-                100% { transform: translateY(200%); }
+                0% {
+                  transform: translateY(-100%);
+                }
+
+                100% {
+                  transform: translateY(200%);
+                }
               }
 
               .animate-scrollLine {
@@ -287,7 +320,9 @@ export default function RootLayout({
                 box-shadow: 0 24px 70px rgba(0,166,81,0.28);
               }
 
-              .process-timeline { position: relative; }
+              .process-timeline {
+                position: relative;
+              }
 
               .process-timeline::before {
                 content: "";
@@ -307,10 +342,14 @@ export default function RootLayout({
               }
 
               @media (min-width: 1024px) {
-                .process-timeline::before { display: block; }
+                .process-timeline::before {
+                  display: block;
+                }
               }
 
-              .process-step { position: relative; }
+              .process-step {
+                position: relative;
+              }
 
               .process-step__dot {
                 width: 10px;
@@ -362,25 +401,218 @@ export default function RootLayout({
               }
 
               @media (max-width: 768px) {
-                html, body {
+                html,
+                body {
                   width: 100%;
-                  overflow-x: hidden;
+                  max-width: 100%;
+                  overflow-x: hidden !important;
+                  background: #050505 !important;
+                }
+
+                main {
+                  width: 100%;
+                  max-width: 100%;
+                  overflow-x: hidden !important;
+                }
+
+                header {
+                  min-height: 64px !important;
+                }
+
+                header > div {
+                  height: 64px !important;
+                  padding-left: 18px !important;
+                  padding-right: 18px !important;
+                }
+
+                header img {
+                  height: 26px !important;
+                  max-width: 92px !important;
+                  object-fit: contain !important;
+                }
+
+                header button {
+                  font-size: 10px !important;
+                  padding: 7px 11px !important;
+                }
+
+                .hero-section {
+                  height: 100svh !important;
+                  min-height: 620px !important;
+                  overflow: hidden !important;
+                  background: #050505 !important;
+                }
+
+                .hero-section > div {
+                  height: 100svh !important;
+                  min-height: 620px !important;
+                  overflow: hidden !important;
+                  background: #050505 !important;
+                }
+
+                .hero-section img,
+                .hero-section video {
+                  width: 100% !important;
+                  height: 100% !important;
+                  object-fit: cover !important;
+                  object-position: center center !important;
+                }
+
+                .hero-section .max-w-7xl {
+                  padding-left: 22px !important;
+                  padding-right: 22px !important;
+                  padding-bottom: 92px !important;
+                }
+
+                .hero-copy {
+                  max-width: 100% !important;
+                }
+
+                .hero-copy h1,
+                .hero-section h1 {
+                  font-size: clamp(42px, 13vw, 68px) !important;
+                  line-height: 1.08 !important;
+                  letter-spacing: -0.04em !important;
+                }
+
+                .hero-copy p,
+                .hero-section p {
+                  font-size: 13px !important;
+                  line-height: 1.9 !important;
+                }
+
+                .pin-spacer {
+                  max-width: 100% !important;
+                  overflow: hidden !important;
+                }
+
+                .section-shell {
+                  min-height: auto !important;
+                  overflow: hidden !important;
+                }
+
+                .section-shell__inner {
+                  min-height: auto !important;
+                  padding: 88px 18px !important;
                 }
 
                 .section-shell__bg {
-                  opacity: 0.28;
+                  opacity: 0.28 !important;
+                  transform: scale(1.08) !important;
+                  background-position: center center !important;
                 }
 
                 .section-shell__overlay {
                   background:
                     radial-gradient(circle at 18% 20%, rgba(225,6,0,0.1), transparent 26%),
                     radial-gradient(circle at 82% 75%, rgba(0,166,81,0.1), transparent 28%),
-                    linear-gradient(180deg, rgba(0,0,0,0.82), rgba(5,5,5,0.94));
+                    linear-gradient(180deg, rgba(0,0,0,0.82), rgba(5,5,5,0.94)) !important;
+                }
+
+                .section-divider {
+                  height: 46px !important;
+                  padding: 0 18px !important;
+                }
+
+                .section-divider__line {
+                  width: 100% !important;
+                }
+
+                .section-shell h2 {
+                  font-size: clamp(30px, 9vw, 42px) !important;
+                  line-height: 1.18 !important;
+                  margin-bottom: 18px !important;
+                }
+
+                .section-shell p {
+                  font-size: 14px !important;
+                  line-height: 1.9 !important;
+                }
+
+                .section-shell .grid {
+                  grid-template-columns: 1fr !important;
+                  gap: 16px !important;
+                }
+
+                #zones .grid {
+                  grid-template-columns: 1fr 1fr !important;
+                }
+
+                .glass-panel,
+                .luxury-card,
+                .car-card {
+                  border-radius: 20px !important;
                 }
 
                 .glass-panel {
-                  backdrop-filter: blur(12px);
-                  -webkit-backdrop-filter: blur(12px);
+                  background: rgba(5, 5, 5, 0.68) !important;
+                  backdrop-filter: blur(12px) !important;
+                  -webkit-backdrop-filter: blur(12px) !important;
+                }
+
+                .luxury-card {
+                  padding: 22px !important;
+                }
+
+                .luxury-card h3 {
+                  font-size: 20px !important;
+                  line-height: 1.35 !important;
+                }
+
+                .car-card {
+                  overflow: hidden !important;
+                }
+
+                .car-card__image-wrap {
+                  aspect-ratio: 16 / 11 !important;
+                  height: auto !important;
+                  min-height: 210px !important;
+                }
+
+                .car-card__image {
+                  width: 100% !important;
+                  height: 100% !important;
+                  object-fit: cover !important;
+                }
+
+                .car-card .btn-whatsapp {
+                  width: 100% !important;
+                  justify-content: center !important;
+                  text-align: center !important;
+                  padding: 14px 18px !important;
+                }
+
+                #contact form {
+                  padding: 20px !important;
+                }
+
+                .field-input {
+                  min-height: 52px !important;
+                  font-size: 15px !important;
+                  border-radius: 16px !important;
+                }
+
+                textarea.field-input {
+                  min-height: 120px !important;
+                }
+
+                .btn-whatsapp {
+                  min-height: 50px !important;
+                  font-size: 11px !important;
+                  letter-spacing: 0.12em !important;
+                }
+
+                footer {
+                  padding: 34px 18px !important;
+                }
+
+                footer img {
+                  height: 36px !important;
+                }
+
+                footer p {
+                  font-size: 9px !important;
+                  line-height: 1.8 !important;
                 }
 
                 .reveal {
