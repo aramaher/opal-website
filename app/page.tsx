@@ -1,3 +1,6 @@
+آره، کل فایل رو با این نسخه جایگزین کن. مشکل `ScrollTrigger` هم داخلش حل شده:
+
+```tsx
 "use client";
 
 import {
@@ -10,9 +13,6 @@ import {
   type ReactNode,
 } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
 
 type Lang = "fa" | "en";
 
@@ -322,13 +322,7 @@ function Section({
   );
 }
 
-function MobileHeroImage({
-  index,
-  alt,
-}: {
-  index: number;
-  alt: string;
-}) {
+function MobileHeroImage({ index, alt }: { index: number; alt: string }) {
   const sources = mobileHeroImageFallbacks[index] ?? mobileHeroImageFallbacks[0];
   const [sourceIndex, setSourceIndex] = useState(0);
 
@@ -377,59 +371,96 @@ export default function Home() {
     const media = window.matchMedia("(max-width: 980px)");
     if (media.matches || !heroRef.current || !progressRef.current) return;
 
-    const hero = heroRef.current;
-    const progress = progressRef.current;
-    const video = videoRef.current;
+    let cancelled = false;
+    let trigger: { kill: () => void } | undefined;
+    let removeMetadataListener: (() => void) | undefined;
 
-    stageRef.current = 0;
-    setStageIndex(0);
-    progress.style.transform = "scaleX(0)";
+    const setupScrollTrigger = async () => {
+      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
 
-    let trigger: ScrollTrigger | undefined;
+      if (cancelled || !heroRef.current || !progressRef.current) return;
 
-    const setProgress = (p: number) => {
-      progress.style.transform = `scaleX(${p})`;
+      gsap.registerPlugin(ScrollTrigger);
 
-      const nextStage = Math.min(t.stages.length - 1, Math.round(p * (t.stages.length - 1)));
-      if (nextStage !== stageRef.current) {
-        stageRef.current = nextStage;
-        setStageIndex(nextStage);
-      }
+      const hero = heroRef.current;
+      const progress = progressRef.current;
+      const video = videoRef.current;
 
-      if (video?.duration && Number.isFinite(video.duration)) {
-        const target = Math.max(0.01, Math.min(video.duration - 0.01, video.duration * p));
-        if (Math.abs(video.currentTime - target) > 0.04) {
-          video.currentTime = target;
+      stageRef.current = 0;
+      setStageIndex(0);
+      progress.style.transform = "scaleX(0)";
+
+      const setProgress = (p: number) => {
+        progress.style.transform = `scaleX(${p})`;
+
+        const nextStage = Math.min(
+          t.stages.length - 1,
+          Math.round(p * (t.stages.length - 1)),
+        );
+
+        if (nextStage !== stageRef.current) {
+          stageRef.current = nextStage;
+          setStageIndex(nextStage);
         }
+
+        if (video?.duration && Number.isFinite(video.duration)) {
+          const target = Math.max(
+            0.01,
+            Math.min(video.duration - 0.01, video.duration * p),
+          );
+
+          if (Math.abs(video.currentTime - target) > 0.04) {
+            video.currentTime = target;
+          }
+        }
+      };
+
+      const createTrigger = () => {
+        trigger?.kill();
+
+        trigger = ScrollTrigger.create({
+          trigger: hero,
+          start: "top top",
+          end: () => `+=${Math.max(window.innerHeight * 7, 5200)}`,
+          scrub: 0.7,
+          pin: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => setProgress(self.progress),
+        });
+
+        ScrollTrigger.refresh();
+      };
+
+      if (video) {
+        video.muted = true;
+        video.playsInline = true;
+        video.preload = "metadata";
+        video.pause();
+
+        if (video.readyState >= 1) {
+          createTrigger();
+        } else {
+          const onLoadedMetadata = () => createTrigger();
+
+          video.addEventListener("loadedmetadata", onLoadedMetadata, {
+            once: true,
+          });
+
+          removeMetadataListener = () => {
+            video.removeEventListener("loadedmetadata", onLoadedMetadata);
+          };
+        }
+      } else {
+        createTrigger();
       }
     };
 
-    const createTrigger = () => {
-      trigger?.kill();
-      trigger = ScrollTrigger.create({
-        trigger: hero,
-        start: "top top",
-        end: () => `+=${Math.max(window.innerHeight * 7, 5200)}`,
-        scrub: 0.7,
-        pin: true,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-        onUpdate: (self) => setProgress(self.progress),
-      });
-      ScrollTrigger.refresh();
-    };
-
-    if (video) {
-      video.muted = true;
-      video.playsInline = true;
-      video.preload = "metadata";
-      video.pause();
-      if (video.readyState >= 1) createTrigger();
-      else video.addEventListener("loadedmetadata", createTrigger, { once: true });
-    }
+    setupScrollTrigger();
 
     return () => {
-      video?.removeEventListener("loadedmetadata", createTrigger);
+      cancelled = true;
+      removeMetadataListener?.();
       trigger?.kill();
     };
   }, [lang, t.stages.length]);
@@ -437,7 +468,12 @@ export default function Home() {
   const sendForm = useCallback(
     (event: FormEvent) => {
       event.preventDefault();
-      window.open(waUrl(t.importWa(name, phone, vehicle, zone, message)), "_blank", "noopener,noreferrer");
+
+      window.open(
+        waUrl(t.importWa(name, phone, vehicle, zone, message)),
+        "_blank",
+        "noopener,noreferrer",
+      );
     },
     [message, name, phone, t, vehicle, zone],
   );
@@ -448,21 +484,41 @@ export default function Home() {
         <a className="brand" href="#top" aria-label="OPAL">
           <img src="/logo.png" alt="OPAL" />
         </a>
+
         <nav>
-          {["services", "zones", "process", "shipping", "listings", "contact"].map((id, index) => (
-            <a key={id} href={`#${id}`}>
-              {t.nav[index]}
-            </a>
-          ))}
+          {["services", "zones", "process", "shipping", "listings", "contact"].map(
+            (id, index) => (
+              <a key={id} href={`#${id}`}>
+                {t.nav[index]}
+              </a>
+            ),
+          )}
         </nav>
+
         <div className="actions">
-          <button className={lang === "fa" ? "active" : ""} type="button" onClick={() => setLang("fa")}>
+          <button
+            className={lang === "fa" ? "active" : ""}
+            type="button"
+            onClick={() => setLang("fa")}
+          >
             FA
           </button>
-          <button className={lang === "en" ? "active" : ""} type="button" onClick={() => setLang("en")}>
+
+          <button
+            className={lang === "en" ? "active" : ""}
+            type="button"
+            onClick={() => setLang("en")}
+          >
             EN
           </button>
-          <a href={waUrl(isFa ? "سلام، درباره واردات خودرو راهنمایی می‌خواهم." : "Hello, I need vehicle import guidance.")}>
+
+          <a
+            href={waUrl(
+              isFa
+                ? "سلام، درباره واردات خودرو راهنمایی می‌خواهم."
+                : "Hello, I need vehicle import guidance.",
+            )}
+          >
             {t.whatsapp}
           </a>
         </div>
@@ -479,23 +535,29 @@ export default function Home() {
             preload="metadata"
             className="heroAsset"
           />
+
           <div className="heroShade" />
+
           <div className="progress">
             <div ref={progressRef} />
           </div>
+
           <div className="heroContent">
             <div className="heroMeta">
               <span>{t.heroSmall}</span>
               <span>
-                {String(stageIndex + 1).padStart(2, "0")} / {String(t.stages.length).padStart(2, "0")}
+                {String(stageIndex + 1).padStart(2, "0")} /{" "}
+                {String(t.stages.length).padStart(2, "0")}
               </span>
             </div>
+
             <div key={`${lang}-${stageIndex}`} className="heroText">
               <p>{stage.eyebrow}</p>
               <h1>{stage.title}</h1>
               <span>{stage.desc}</span>
             </div>
           </div>
+
           <div className="scrollHint">
             <span>{t.scroll}</span>
             <i />
@@ -508,13 +570,16 @@ export default function Home() {
           <article className="mobileHeroPanel" key={item.eyebrow}>
             <MobileHeroImage index={index} alt="OPAL vehicle import" />
             <div className="mobileHeroShade" />
+
             <div className="mobileHeroText">
               <div className="heroMeta">
                 <span>{t.heroSmall}</span>
                 <span>
-                  {String(index + 1).padStart(2, "0")} / {String(t.stages.length).padStart(2, "0")}
+                  {String(index + 1).padStart(2, "0")} /{" "}
+                  {String(t.stages.length).padStart(2, "0")}
                 </span>
               </div>
+
               <p>{item.eyebrow}</p>
               <h1>{item.title}</h1>
               <span>{item.desc}</span>
@@ -540,13 +605,22 @@ export default function Home() {
         </div>
       </Section>
 
-      <Section id="zones" bg={sectionBg.zones} label={t.sections.zones.label} title={t.sections.zones.title}>
+      <Section
+        id="zones"
+        bg={sectionBg.zones}
+        label={t.sections.zones.label}
+        title={t.sections.zones.title}
+      >
         <div className="cards four">
           {zoneItems.map((item) => (
             <a
               className="card zone"
               key={item}
-              href={waUrl(isFa ? `سلام، واردات خودرو به منطقه آزاد ${item} را می‌خواهم.` : `Hello, I want vehicle import to ${item}.`)}
+              href={waUrl(
+                isFa
+                  ? `سلام، واردات خودرو به منطقه آزاد ${item} را می‌خواهم.`
+                  : `Hello, I want vehicle import to ${item}.`,
+              )}
             >
               <h3>{item}</h3>
               <small>WhatsApp</small>
@@ -555,7 +629,12 @@ export default function Home() {
         </div>
       </Section>
 
-      <Section id="process" bg={sectionBg.process} label={t.sections.process.label} title={t.sections.process.title}>
+      <Section
+        id="process"
+        bg={sectionBg.process}
+        label={t.sections.process.label}
+        title={t.sections.process.title}
+      >
         <div className="cards five">
           {t.sections.process.items.map((item, index) => (
             <article className="card" key={item}>
@@ -593,16 +672,20 @@ export default function Home() {
         <div className="cars">
           {cars.map((car) => {
             const route = isFa ? car.routeFa : car.routeEn;
+
             return (
               <article className="car" key={car.model}>
                 <img src={car.image} alt={car.model} loading="lazy" />
+
                 <div>
                   <h3>{car.model}</h3>
                   <p>
                     {t.year}: {car.year}
                   </p>
                   <p>{route}</p>
-                  <a href={waUrl(t.carWa(car.model, car.year, route))}>{t.carCta}</a>
+                  <a href={waUrl(t.carWa(car.model, car.year, route))}>
+                    {t.carCta}
+                  </a>
                 </div>
               </article>
             );
@@ -618,9 +701,27 @@ export default function Home() {
         desc={t.sections.contact.desc}
       >
         <form className="form" onSubmit={sendForm}>
-          <input required value={name} onChange={(e) => setName(e.target.value)} placeholder={t.form.name} />
-          <input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t.form.phone} />
-          <input required value={vehicle} onChange={(e) => setVehicle(e.target.value)} placeholder={t.form.vehicle} />
+          <input
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t.form.name}
+          />
+
+          <input
+            required
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder={t.form.phone}
+          />
+
+          <input
+            required
+            value={vehicle}
+            onChange={(e) => setVehicle(e.target.value)}
+            placeholder={t.form.vehicle}
+          />
+
           <select required value={zone} onChange={(e) => setZone(e.target.value)}>
             {zoneItems.map((item) => (
               <option key={item} value={item}>
@@ -628,7 +729,13 @@ export default function Home() {
               </option>
             ))}
           </select>
-          <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t.form.message} />
+
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={t.form.message}
+          />
+
           <button type="submit">{t.form.submit}</button>
         </form>
       </Section>
@@ -640,3 +747,4 @@ export default function Home() {
     </main>
   );
 }
+```
