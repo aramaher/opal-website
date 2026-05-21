@@ -130,6 +130,10 @@ main {
   min-height: 620px;
 }
 
+.mobileHero {
+  display: none;
+}
+
 .heroMedia {
   position: relative;
   height: 100vh;
@@ -271,6 +275,68 @@ main {
   height: 16px;
   background: #fff;
   animation: scrollLine 1.45s ease-in-out infinite;
+}
+
+.mobileHeroPanel {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  background: #000;
+}
+
+.mobileHeroPanel img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.mobileHeroShade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.42), transparent 34%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.84), rgba(0, 0, 0, 0.1) 58%),
+    rgba(0, 0, 0, 0.06);
+}
+
+.mobileHeroText {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0 18px 74px;
+}
+
+.mobileHeroText p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 10px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.mobileHeroText h1 {
+  margin: 12px 0 0;
+  color: #fff;
+  font-size: clamp(38px, 12vw, 58px);
+  font-weight: 300;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.mobileHeroText > span {
+  display: block;
+  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 14px;
+  line-height: 1.9;
 }
 
 @keyframes heroText {
@@ -527,9 +593,18 @@ footer p {
     display: none;
   }
 
-  .hero,
-  .heroMedia {
-    min-height: 100svh;
+  .hero {
+    display: none;
+  }
+
+  .mobileHero {
+    display: block;
+    background: #000;
+    scroll-snap-type: y proximity;
+  }
+
+  .mobileHeroPanel {
+    scroll-snap-align: start;
   }
 
   .heroContent {
