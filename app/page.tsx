@@ -304,7 +304,6 @@ export default function Home() {
   const [lang, setLang] = useState<Lang>("fa");
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [stageIndex, setStageIndex] = useState(0);
-  const [imageIndex, setImageIndex] = useState(0);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [vehicle, setVehicle] = useState("");
@@ -329,7 +328,7 @@ export default function Home() {
   }, []);
 
   useLayoutEffect(() => {
-    if (isMobile === null || !heroRef.current || !progressRef.current) return;
+    if (isMobile !== false || !heroRef.current || !progressRef.current) return;
 
     const hero = heroRef.current;
     const progress = progressRef.current;
@@ -337,7 +336,6 @@ export default function Home() {
 
     stageRef.current = 0;
     setStageIndex(0);
-    setImageIndex(0);
     progress.style.transform = "scaleX(0)";
 
     let trigger: ScrollTrigger | undefined;
@@ -349,11 +347,6 @@ export default function Home() {
       if (nextStage !== stageRef.current) {
         stageRef.current = nextStage;
         setStageIndex(nextStage);
-      }
-
-      if (isMobile) {
-        setImageIndex(Math.min(heroImages.length - 1, Math.round(p * (heroImages.length - 1))));
-        return;
       }
 
       if (video?.duration && Number.isFinite(video.duration)) {
@@ -369,8 +362,8 @@ export default function Home() {
       trigger = ScrollTrigger.create({
         trigger: hero,
         start: "top top",
-        end: () => `+=${Math.max(window.innerHeight * (isMobile ? 5 : 7), isMobile ? 3200 : 5200)}`,
-        scrub: isMobile ? 0.5 : 0.7,
+        end: () => `+=${Math.max(window.innerHeight * 7, 5200)}`,
+        scrub: 0.7,
         pin: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,
@@ -379,15 +372,13 @@ export default function Home() {
       ScrollTrigger.refresh();
     };
 
-    if (!isMobile && video) {
+    if (video) {
       video.muted = true;
       video.playsInline = true;
       video.preload = "metadata";
       video.pause();
       if (video.readyState >= 1) createTrigger();
       else video.addEventListener("loadedmetadata", createTrigger, { once: true });
-    } else {
-      createTrigger();
     }
 
     return () => {
@@ -430,9 +421,9 @@ export default function Home() {
         </div>
       </header>
 
-      <section id="top" ref={heroRef} className="hero">
-        <div className="heroMedia">
-          {isMobile === false ? (
+      {isMobile === false ? (
+        <section id="top" ref={heroRef} className="hero">
+          <div className="heroMedia">
             <video
               ref={videoRef}
               src="/hero.mp4?v=80"
@@ -442,32 +433,50 @@ export default function Home() {
               preload="metadata"
               className="heroAsset"
             />
-          ) : (
-            <img src={heroImages[imageIndex]} alt="OPAL vehicle import" className="heroAsset" />
-          )}
-          <div className="heroShade" />
-          <div className="progress">
-            <div ref={progressRef} />
-          </div>
-          <div className="heroContent">
-            <div className="heroMeta">
-              <span>{t.heroSmall}</span>
-              <span>
-                {String(stageIndex + 1).padStart(2, "0")} / {String(t.stages.length).padStart(2, "0")}
-              </span>
+            <div className="heroShade" />
+            <div className="progress">
+              <div ref={progressRef} />
             </div>
-            <div key={`${lang}-${stageIndex}`} className="heroText">
-              <p>{stage.eyebrow}</p>
-              <h1>{stage.title}</h1>
-              <span>{stage.desc}</span>
+            <div className="heroContent">
+              <div className="heroMeta">
+                <span>{t.heroSmall}</span>
+                <span>
+                  {String(stageIndex + 1).padStart(2, "0")} / {String(t.stages.length).padStart(2, "0")}
+                </span>
+              </div>
+              <div key={`${lang}-${stageIndex}`} className="heroText">
+                <p>{stage.eyebrow}</p>
+                <h1>{stage.title}</h1>
+                <span>{stage.desc}</span>
+              </div>
+            </div>
+            <div className="scrollHint">
+              <span>{t.scroll}</span>
+              <i />
             </div>
           </div>
-          <div className="scrollHint">
-            <span>{t.scroll}</span>
-            <i />
-          </div>
-        </div>
-      </section>
+        </section>
+      ) : (
+        <section id="top" className="mobileHero" aria-label="OPAL mobile hero">
+          {t.stages.map((item, index) => (
+            <article className="mobileHeroPanel" key={item.eyebrow}>
+              <img src={heroImages[index]} alt="OPAL vehicle import" />
+              <div className="mobileHeroShade" />
+              <div className="mobileHeroText">
+                <div className="heroMeta">
+                  <span>{t.heroSmall}</span>
+                  <span>
+                    {String(index + 1).padStart(2, "0")} / {String(t.stages.length).padStart(2, "0")}
+                  </span>
+                </div>
+                <p>{item.eyebrow}</p>
+                <h1>{item.title}</h1>
+                <span>{item.desc}</span>
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
 
       <Section
         id="services"
