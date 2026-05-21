@@ -1,8 +1,3 @@
-آره، کل فایل رو با این نسخه جایگزین کن. مشکل `ScrollTrigger` هم داخلش حل شده:
-
-```tsx
-"use client";
-
 import {
   useCallback,
   useEffect,
