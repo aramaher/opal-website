@@ -10,10 +10,6 @@ import {
   type ElementType,
   type ReactNode,
 } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
 
 type Lang = "fa" | "en";
 
@@ -439,7 +435,7 @@ export default function Home() {
   const isFa = lang === "fa";
   const stage = t.stages[activeStage];
 
-  const videoSrc = useMemo(() => "/hero.mp4?v=70", []);
+  const videoSrc = useMemo(() => "/hero.mp4?v=90", []);
   const mobileHeroImage =
     MOBILE_HERO_IMAGES[mobileFrame] ?? MOBILE_HERO_IMAGES[0];
 
@@ -454,14 +450,7 @@ export default function Home() {
 
     const resetPage = () => {
       window.scrollTo(0, 0);
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-        ScrollTrigger.refresh(true);
-      }, 250);
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-        ScrollTrigger.refresh(true);
-      }, 800);
+      setTimeout(() => window.scrollTo(0, 0), 200);
     };
 
     resetPage();
@@ -483,141 +472,158 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const hero = heroRef.current;
-    const progressBar = progressBarRef.current;
-
-    if (!hero || !progressBar) return;
-
-    activeStageRef.current = 0;
-    setActiveStage(0);
-    progressBar.style.transform = "scaleX(0)";
-
-    let trigger: ScrollTrigger | null = null;
+    let killed = false;
+    let trigger: any = null;
     let refreshTimerOne: ReturnType<typeof setTimeout> | null = null;
     let refreshTimerTwo: ReturnType<typeof setTimeout> | null = null;
 
-    if (isMobile) {
-      setMobileFrame(0);
+    const init = async () => {
+      const hero = heroRef.current;
+      const progressBar = progressBarRef.current;
 
-      trigger = ScrollTrigger.create({
-        trigger: hero,
-        start: "top top",
-        end: "+=4300",
-        scrub: 0.45,
-        pin: true,
-        pinSpacing: true,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          const p = self.progress;
+      if (!hero || !progressBar) return;
 
-          progressBar.style.transform = `scaleX(${p})`;
+      activeStageRef.current = 0;
+      setActiveStage(0);
+      progressBar.style.transform = "scaleX(0)";
 
-          const nextStage = Math.min(
-            t.stages.length - 1,
-            Math.floor(p * t.stages.length),
-          );
+      const gsapModule = await import("gsap");
+      const scrollTriggerModule = await import("gsap/ScrollTrigger");
 
-          const nextFrame = Math.min(
-            MOBILE_HERO_IMAGES.length - 1,
-            Math.floor(p * MOBILE_HERO_IMAGES.length),
-          );
+      if (killed) return;
 
-          if (nextStage !== activeStageRef.current) {
-            activeStageRef.current = nextStage;
-            setActiveStage(nextStage);
-          }
+      const gsap = gsapModule.default;
+      const ScrollTrigger = scrollTriggerModule.ScrollTrigger;
 
-          setMobileFrame(nextFrame);
-        },
-      });
+      gsap.registerPlugin(ScrollTrigger);
 
-      ScrollTrigger.refresh(true);
-      refreshTimerOne = setTimeout(() => ScrollTrigger.refresh(true), 500);
-      refreshTimerTwo = setTimeout(() => ScrollTrigger.refresh(true), 1200);
+      if (isMobile) {
+        setMobileFrame(0);
 
-      return () => {
-        if (refreshTimerOne) clearTimeout(refreshTimerOne);
-        if (refreshTimerTwo) clearTimeout(refreshTimerTwo);
-        if (trigger) trigger.kill();
-      };
-    }
+        trigger = ScrollTrigger.create({
+          trigger: hero,
+          start: "top top",
+          end: "+=4300",
+          scrub: 0.45,
+          pin: true,
+          pinSpacing: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self: any) => {
+            const p = self.progress;
 
-    const video = videoRef.current;
-    if (!video) return;
+            progressBar.style.transform = `scaleX(${p})`;
 
-    video.muted = true;
-    video.playsInline = true;
-    video.preload = "auto";
-    video.loop = false;
-    video.autoplay = false;
-    video.pause();
+            const nextStage = Math.min(
+              t.stages.length - 1,
+              Math.floor(p * t.stages.length),
+            );
 
-    try {
-      video.currentTime = 0;
-    } catch {
-      // Ignore seek errors before metadata.
-    }
+            const nextFrame = Math.min(
+              MOBILE_HERO_IMAGES.length - 1,
+              Math.floor(p * MOBILE_HERO_IMAGES.length),
+            );
 
-    const setupScroll = () => {
-      if (trigger) trigger.kill();
-
-      trigger = ScrollTrigger.create({
-        trigger: hero,
-        start: "top top",
-        end: "+=7600",
-        scrub: 0.65,
-        pin: true,
-        pinSpacing: true,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          const p = self.progress;
-
-          progressBar.style.transform = `scaleX(${p})`;
-
-          if (video.duration && Number.isFinite(video.duration)) {
-            const target =
-              p >= 1
-                ? Math.max(0, video.duration - 0.001)
-                : Math.max(0.001, video.duration * p);
-
-            if (Math.abs(video.currentTime - target) > 0.035) {
-              requestAnimationFrame(() => {
-                try {
-                  video.currentTime = target;
-                } catch {
-                  // Ignore Safari seek error.
-                }
-              });
+            if (nextStage !== activeStageRef.current) {
+              activeStageRef.current = nextStage;
+              setActiveStage(nextStage);
             }
-          }
 
-          const nextStage = Math.min(
-            t.stages.length - 1,
-            Math.floor(p * t.stages.length),
-          );
+            setMobileFrame(nextFrame);
+          },
+        });
 
-          if (nextStage !== activeStageRef.current) {
-            activeStageRef.current = nextStage;
-            setActiveStage(nextStage);
-          }
-        },
-      });
+        ScrollTrigger.refresh(true);
+        refreshTimerOne = setTimeout(() => ScrollTrigger.refresh(true), 500);
+        refreshTimerTwo = setTimeout(() => ScrollTrigger.refresh(true), 1200);
 
-      ScrollTrigger.refresh(true);
-      refreshTimerOne = setTimeout(() => ScrollTrigger.refresh(true), 500);
-      refreshTimerTwo = setTimeout(() => ScrollTrigger.refresh(true), 1200);
+        return;
+      }
+
+      const video = videoRef.current;
+      if (!video) return;
+
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = "auto";
+      video.loop = false;
+      video.autoplay = false;
+      video.pause();
+
+      try {
+        video.currentTime = 0;
+      } catch {
+        // Ignore seek errors before metadata.
+      }
+
+      const setupScroll = () => {
+        if (trigger) trigger.kill();
+
+        trigger = ScrollTrigger.create({
+          trigger: hero,
+          start: "top top",
+          end: "+=7600",
+          scrub: 0.65,
+          pin: true,
+          pinSpacing: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self: any) => {
+            const p = self.progress;
+
+            progressBar.style.transform = `scaleX(${p})`;
+
+            if (video.duration && Number.isFinite(video.duration)) {
+              const target =
+                p >= 1
+                  ? Math.max(0, video.duration - 0.001)
+                  : Math.max(0.001, video.duration * p);
+
+              if (Math.abs(video.currentTime - target) > 0.035) {
+                requestAnimationFrame(() => {
+                  try {
+                    video.currentTime = target;
+                  } catch {
+                    // Ignore Safari seek error.
+                  }
+                });
+              }
+            }
+
+            const nextStage = Math.min(
+              t.stages.length - 1,
+              Math.floor(p * t.stages.length),
+            );
+
+            if (nextStage !== activeStageRef.current) {
+              activeStageRef.current = nextStage;
+              setActiveStage(nextStage);
+            }
+          },
+        });
+
+        ScrollTrigger.refresh(true);
+        refreshTimerOne = setTimeout(() => ScrollTrigger.refresh(true), 500);
+        refreshTimerTwo = setTimeout(() => ScrollTrigger.refresh(true), 1200);
+      };
+
+      if (video.readyState >= 1) {
+        setupScroll();
+      } else {
+        video.addEventListener("loadedmetadata", setupScroll, { once: true });
+      }
     };
 
-    if (video.readyState >= 1) {
-      setupScroll();
-    } else {
-      video.addEventListener("loadedmetadata", setupScroll, { once: true });
-    }
+    init();
 
     return () => {
-      video.removeEventListener("loadedmetadata", setupScroll);
+      killed = true;
+
+      const video = videoRef.current;
+      if (video) {
+        video.removeEventListener("loadedmetadata", () => {});
+      }
+
       if (refreshTimerOne) clearTimeout(refreshTimerOne);
       if (refreshTimerTwo) clearTimeout(refreshTimerTwo);
       if (trigger) trigger.kill();
@@ -686,6 +692,7 @@ export default function Home() {
                 EN
               </button>
             </div>
+
             <a
               href={waUrl(
                 isFa
