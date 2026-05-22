@@ -186,9 +186,9 @@ main {
   z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 24%),
-    linear-gradient(0deg, rgba(0, 0, 0, 0.78), transparent 46%),
-    rgba(0, 0, 0, 0.08);
+    linear-gradient(180deg, rgba(0, 0, 0, 0.34), transparent 28%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.54), transparent 52%),
+    rgba(0, 0, 0, 0.03);
 }
 
 .progress,
@@ -198,8 +198,8 @@ main {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.12);
+  height: 3px;
+  background: rgba(255, 255, 255, 0.26);
 }
 
 .progress > div,
@@ -251,8 +251,15 @@ main {
   max-width: 780px;
 }
 
+[dir="ltr"] .heroText {
+  margin-inline-start: 0;
+  margin-inline-end: auto;
+  text-align: left;
+}
+
 [dir="rtl"] .heroText {
   margin-inline-start: auto;
+  margin-inline-end: 0;
   text-align: right;
 }
 
@@ -276,6 +283,11 @@ main {
 
 [dir="rtl"] .heroText > span {
   margin-inline-start: auto;
+}
+
+[dir="ltr"] .heroText > span {
+  margin-inline-start: 0;
+  margin-inline-end: auto;
 }
 
 .scrollHint {
@@ -409,6 +421,24 @@ main {
   background: #050505;
 }
 
+.section::before,
+.mobileHero::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  left: 24px;
+  right: 24px;
+  top: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+}
+
+.mobileHero::after {
+  top: auto;
+  bottom: 0;
+}
+
 .sectionBg,
 .sectionOverlay {
   position: absolute;
@@ -420,13 +450,15 @@ main {
   z-index: -2;
   background-position: center;
   background-size: cover;
-  opacity: 0.28;
+  opacity: 0.56;
   transform: scale(1.04);
 }
 
 .sectionOverlay {
   z-index: -1;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.82), rgba(5, 5, 5, 0.94));
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.48), rgba(5, 5, 5, 0.68)),
+    rgba(0, 0, 0, 0.18);
 }
 
 .sectionInner {
@@ -496,12 +528,16 @@ main {
 }
 
 .card h3 {
-  margin: 12px 0 0;
+  margin: 0;
   color: #fff;
   font-size: 22px;
   font-weight: 300;
   line-height: 1.35;
   letter-spacing: 0;
+}
+
+.card > small:first-child {
+  display: none;
 }
 
 .card.zone {
@@ -756,6 +792,10 @@ footer p {
     background: #000;
   }
 
+  .mobileProgress {
+    top: 64px;
+  }
+
   .heroMeta {
     margin-bottom: 16px;
   }
@@ -794,8 +834,14 @@ footer p {
   }
 
   .sectionBg {
-    opacity: 0.22;
+    opacity: 0.48;
     transform: scale(1.08);
+  }
+
+  .sectionOverlay {
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(5, 5, 5, 0.72)),
+      rgba(0, 0, 0, 0.16);
   }
 
   .sectionHead {
@@ -876,15 +922,42 @@ footer p {
     display: none;
   }
 
+  [dir="ltr"] .heroContent {
+    left: 0;
+    right: auto;
+    margin: 0;
+    padding-left: clamp(28px, 7vw, 96px);
+    padding-right: 24px;
+  }
+
   [dir="rtl"] .heroContent {
-    margin-left: auto;
-    margin-right: 0;
+    left: auto;
+    right: 0;
+    margin: 0;
     padding-left: 24px;
     padding-right: clamp(28px, 7vw, 96px);
   }
 
+  [dir="ltr"] .heroContent .heroMeta {
+    justify-content: flex-start;
+  }
+
   [dir="rtl"] .heroContent .heroMeta {
     justify-content: flex-end;
+  }
+
+  [dir="rtl"] .sectionHead,
+  [dir="rtl"] .card,
+  [dir="rtl"] .car div,
+  [dir="rtl"] .form {
+    text-align: right;
+  }
+
+  [dir="ltr"] .sectionHead,
+  [dir="ltr"] .card,
+  [dir="ltr"] .car div,
+  [dir="ltr"] .form {
+    text-align: left;
   }
 }
 
