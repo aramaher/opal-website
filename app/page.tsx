@@ -656,7 +656,6 @@ export default function Home() {
             alt="OPAL vehicle import"
             className="hero-mobile-image"
             decoding="async"
-            fetchPriority="high"
           />
 
           <div className="mobileHeroShade" />
@@ -698,9 +697,8 @@ export default function Home() {
         desc={t.sections.services.desc}
       >
         <div className="cards three">
-          {t.sections.services.items.map((item, index) => (
+          {t.sections.services.items.map((item) => (
             <article className="card luxury-card reveal" key={item}>
-              <small>{String(index + 1).padStart(2, "0")}</small>
               <h3>{item}</h3>
             </article>
           ))}
@@ -738,9 +736,8 @@ export default function Home() {
         title={t.sections.process.title}
       >
         <div className="cards five">
-          {t.sections.process.items.map((item, index) => (
+          {t.sections.process.items.map((item) => (
             <article className="card luxury-card reveal" key={item}>
-              <small>{String(index + 1).padStart(2, "0")}</small>
               <h3>{item}</h3>
             </article>
           ))}
@@ -755,9 +752,8 @@ export default function Home() {
         desc={t.sections.shipping.desc}
       >
         <div className="cards four">
-          {t.sections.shipping.items.map((item, index) => (
+          {t.sections.shipping.items.map((item) => (
             <article className="card luxury-card reveal" key={item}>
-              <small>{String(index + 1).padStart(2, "0")}</small>
               <h3>{item}</h3>
             </article>
           ))}
