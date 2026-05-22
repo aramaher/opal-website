@@ -3,7 +3,6 @@
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   type FormEvent,
@@ -22,15 +21,6 @@ const MOBILE_HERO_IMAGES = [
   "/hero-photo5.jpg",
   "/hero-photo6.jpg",
 ] as const;
-
-const sectionBg = {
-  services: "/images/backgrounds/services-bg.jpg",
-  zones: "/images/backgrounds/zones-bg.jpg",
-  process: "/images/backgrounds/process-bg.jpg",
-  shipping: "/images/backgrounds/shipping-bg.jpg",
-  listings: "/images/backgrounds/listings-bg.jpg",
-  contact: "/images/backgrounds/contact-bg.jpg",
-};
 
 function waUrl(text: string) {
   return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
@@ -262,22 +252,23 @@ const cars = [
 
 function Section({
   id,
-  bg,
+  variant,
   label,
   title,
   desc,
   children,
 }: {
   id: string;
-  bg: string;
+  variant: string;
   label: string;
   title: string;
   desc?: string;
   children: ReactNode;
 }) {
   return (
-    <section id={id} className="section">
-      <div className="sectionBg" style={{ backgroundImage: `url(${bg})` }} />
+    <section id={id} className={`section section-${variant}`}>
+      <div className="sectionBg" />
+      <div className="sectionGlow" />
       <div className="sectionOverlay" />
       <div className="sectionInner">
         <div className="sectionHead reveal">
@@ -318,13 +309,20 @@ export default function Home() {
     setZone(zoneItems[0]);
   }, [lang, zoneItems]);
 
+  // Sync <html> lang and dir so [dir="rtl"] / [dir="ltr"] CSS selectors work
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = t.dir;
+  }, [lang, t.dir]);
+
   // -----------------------------------------------------------
   // DESKTOP hero — GSAP ScrollTrigger video scrub
   // Loaded dynamically only on desktop, only on client.
   // -----------------------------------------------------------
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (typeof window === "undefined") return;
-    const isMobile = window.matchMedia("(max-width: 980px)").matches;
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
     if (isMobile) return;
 
     const hero = heroRef.current;
@@ -430,9 +428,9 @@ export default function Home() {
   // MOBILE hero — GSAP ScrollTrigger pins hero + swaps image src
   // No video, no autoplay, no poster.
   // -----------------------------------------------------------
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (typeof window === "undefined") return;
-    const isMobile = window.matchMedia("(max-width: 980px)").matches;
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
     if (!isMobile) return;
 
     const hero = mobileHeroRef.current;
@@ -691,7 +689,7 @@ export default function Home() {
 
       <Section
         id="services"
-        bg={sectionBg.services}
+        variant="services"
         label={t.sections.services.label}
         title={t.sections.services.title}
         desc={t.sections.services.desc}
@@ -707,7 +705,7 @@ export default function Home() {
 
       <Section
         id="zones"
-        bg={sectionBg.zones}
+        variant="zones"
         label={t.sections.zones.label}
         title={t.sections.zones.title}
       >
@@ -731,7 +729,7 @@ export default function Home() {
 
       <Section
         id="process"
-        bg={sectionBg.process}
+        variant="process"
         label={t.sections.process.label}
         title={t.sections.process.title}
       >
@@ -746,7 +744,7 @@ export default function Home() {
 
       <Section
         id="shipping"
-        bg={sectionBg.shipping}
+        variant="shipping"
         label={t.sections.shipping.label}
         title={t.sections.shipping.title}
         desc={t.sections.shipping.desc}
@@ -762,7 +760,7 @@ export default function Home() {
 
       <Section
         id="listings"
-        bg={sectionBg.listings}
+        variant="listings"
         label={t.sections.listings.label}
         title={t.sections.listings.title}
         desc={t.sections.listings.desc}
@@ -797,7 +795,7 @@ export default function Home() {
 
       <Section
         id="contact"
-        bg={sectionBg.contact}
+        variant="contact"
         label={t.sections.contact.label}
         title={t.sections.contact.title}
         desc={t.sections.contact.desc}
