@@ -286,7 +286,6 @@ export default function Home() {
   const heroRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const mobileHeroRef = useRef<HTMLElement>(null);
-  const mobileImgRef = useRef<HTMLImageElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const mobileProgressRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef(0);
@@ -294,6 +293,8 @@ export default function Home() {
 
   const [lang, setLang] = useState<Lang>("fa");
   const [stageIndex, setStageIndex] = useState(0);
+  const [mobileFrame, setMobileFrame] = useState(0);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [vehicle, setVehicle] = useState("");
@@ -304,6 +305,34 @@ export default function Home() {
   const isFa = lang === "fa";
   const stage = t.stages[stageIndex];
   const zoneItems = t.sections.zones.items;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const query = window.matchMedia("(max-width: 768px)");
+    const updateViewport = () => {
+      setIsMobile(query.matches);
+      setStageIndex(0);
+      setMobileFrame(0);
+      stageRef.current = 0;
+      mobileFrameRef.current = 0;
+    };
+
+    updateViewport();
+    if (typeof query.addEventListener === "function") {
+      query.addEventListener("change", updateViewport);
+    } else {
+      query.addListener(updateViewport);
+    }
+
+    return () => {
+      if (typeof query.removeEventListener === "function") {
+        query.removeEventListener("change", updateViewport);
+      } else {
+        query.removeListener(updateViewport);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     setZone(zoneItems[0]);
@@ -322,8 +351,8 @@ export default function Home() {
   // -----------------------------------------------------------
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    if (isMobile) return;
+    if (isMobile !== false) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const hero = heroRef.current;
     const progress = progressRef.current;
@@ -422,7 +451,7 @@ export default function Home() {
       removeMetadataListener?.();
       trigger?.kill();
     };
-  }, [lang, t.stages.length]);
+  }, [isMobile, lang, t.stages.length]);
 
   // -----------------------------------------------------------
   // MOBILE hero — GSAP ScrollTrigger pins hero + swaps image src
@@ -430,13 +459,12 @@ export default function Home() {
   // -----------------------------------------------------------
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    if (!isMobile) return;
+    if (isMobile !== true) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const hero = mobileHeroRef.current;
-    const img = mobileImgRef.current;
     const progress = mobileProgressRef.current;
-    if (!hero || !img || !progress) return;
+    if (!hero || !progress) return;
 
     let cancelled = false;
     let trigger: { kill: () => void } | undefined;
@@ -453,7 +481,7 @@ export default function Home() {
       stageRef.current = 0;
       mobileFrameRef.current = 0;
       setStageIndex(0);
-      img.src = MOBILE_HERO_IMAGES[0];
+      setMobileFrame(0);
       progress.style.transform = "scaleX(0)";
 
       const totalFrames = MOBILE_HERO_IMAGES.length;
@@ -468,7 +496,7 @@ export default function Home() {
         );
         if (nextFrame !== mobileFrameRef.current) {
           mobileFrameRef.current = nextFrame;
-          img.src = MOBILE_HERO_IMAGES[nextFrame];
+          setMobileFrame(nextFrame);
         }
 
         const nextStage = Math.min(
@@ -501,7 +529,7 @@ export default function Home() {
       cancelled = true;
       trigger?.kill();
     };
-  }, [lang, t.stages.length]);
+  }, [isMobile, lang, t.stages.length]);
 
   // -----------------------------------------------------------
   // Reveal-on-scroll for section content (cards, headings).
@@ -597,95 +625,98 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ====================== DESKTOP HERO (video scrub) ====================== */}
-      <section id="top" ref={heroRef} className="hero hero-section">
-        <div className="heroMedia">
-          <video
-            ref={videoRef}
-            src="/hero.mp4?v=80"
-            poster="/hero-poster.jpg"
-            muted
-            playsInline
-            preload="auto"
-            controls={false}
-            className="heroAsset hero-video"
-          />
+      {isMobile === null ? <div id="top" className="heroShell" /> : null}
 
-          <div className="heroShade" />
+      {isMobile === false ? (
+        <section id="top" ref={heroRef} className="hero hero-section">
+          <div className="heroMedia">
+            <video
+              ref={videoRef}
+              src="/hero.mp4"
+              poster="/hero-poster.jpg"
+              muted
+              playsInline
+              preload="auto"
+              controls={false}
+              className="heroAsset hero-video"
+            />
 
-          <div className="progress hero-progress">
-            <div ref={progressRef} />
-          </div>
+            <div className="heroShade" />
 
-          <div className="heroContent">
-            <div className="heroMeta">
-              <span>{t.heroSmall}</span>
+            <div className="progress hero-progress">
+              <div ref={progressRef} />
             </div>
 
-            <div
-              key={`d-${lang}-${stageIndex}`}
-              className="heroText animate-heroText"
-            >
-              <p>{stage.eyebrow}</p>
-              <h1>{stage.title}</h1>
-              <span>{stage.desc}</span>
+            <div className="heroContent">
+              <div className="heroMeta">
+                <span>{t.heroSmall}</span>
+              </div>
+
+              <div
+                key={`d-${lang}-${stageIndex}`}
+                className="heroText animate-heroText"
+              >
+                <p>{stage.eyebrow}</p>
+                <h1>{stage.title}</h1>
+                <span>{stage.desc}</span>
+              </div>
+            </div>
+
+            <div className="scrollHint">
+              <span>{t.scroll}</span>
+              <i />
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {isMobile === true ? (
+        <section
+          id="top"
+          ref={mobileHeroRef}
+          className="mobileHero"
+          aria-label="OPAL mobile hero"
+        >
+          <div className="mobileHeroPanel">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={MOBILE_HERO_IMAGES[mobileFrame]}
+              alt="OPAL vehicle import"
+              className="hero-mobile-image"
+              decoding="async"
+              fetchPriority="high"
+            />
+
+            <div className="mobileHeroShade" />
+
+            <div className="progress hero-progress mobileProgress">
+              <div ref={mobileProgressRef} />
+            </div>
+
+            <div className="mobileHeroText">
+              <div className="heroMeta">
+                <span>{t.heroSmall}</span>
+              </div>
+
+              <div
+                key={`m-${lang}-${stageIndex}`}
+                className="heroText animate-heroText"
+              >
+                <p>{stage.eyebrow}</p>
+                <h1>{stage.title}</h1>
+                <span>{stage.desc}</span>
+              </div>
             </div>
           </div>
 
-          <div className="scrollHint">
-            <span>{t.scroll}</span>
-            <i />
+          <div aria-hidden="true" className="mobileHeroPreload">
+            {MOBILE_HERO_IMAGES.slice(1).map((src) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={src} src={src} alt="" loading="eager" decoding="async" />
+            ))}
           </div>
-        </div>
-      </section>
-
-      {/* ====================== MOBILE HERO (image scrub) ======================= */}
-      <section
-        id="top-mobile"
-        ref={mobileHeroRef}
-        className="mobileHero"
-        aria-label="OPAL mobile hero"
-      >
-        <div className="mobileHeroPanel">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            ref={mobileImgRef}
-            src={MOBILE_HERO_IMAGES[0]}
-            alt="OPAL vehicle import"
-            className="hero-mobile-image"
-            decoding="async"
-          />
-
-          <div className="mobileHeroShade" />
-
-          <div className="progress hero-progress mobileProgress">
-            <div ref={mobileProgressRef} />
-          </div>
-
-          <div className="mobileHeroText">
-            <div className="heroMeta">
-              <span>{t.heroSmall}</span>
-            </div>
-
-            <div
-              key={`m-${lang}-${stageIndex}`}
-              className="heroText animate-heroText"
-            >
-              <p>{stage.eyebrow}</p>
-              <h1>{stage.title}</h1>
-              <span>{stage.desc}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Preload remaining frames so swap is instant — hidden, no layout cost */}
-        <div aria-hidden="true" className="mobileHeroPreload">
-          {MOBILE_HERO_IMAGES.slice(1).map((src) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={src} src={src} alt="" loading="eager" decoding="async" />
-          ))}
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       <Section
         id="services"
