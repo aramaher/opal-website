@@ -224,9 +224,8 @@ main {
   right: 0;
   bottom: 0;
   width: 100%;
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 0 clamp(24px, 5vw, 64px) 96px;
+  margin: 0;
+  padding: 0 clamp(24px, 6vw, 80px) 96px;
   /* Real 3D context for child animations */
   perspective: 1400px;
   perspective-origin: center bottom;
@@ -256,10 +255,20 @@ main {
 
 .heroText {
   max-width: 780px;
+  margin-left: 0;
+  margin-right: 0;
   text-align: left;
   transform-style: preserve-3d;
 }
 
+/* LTR: text block sticks to the LEFT edge of viewport */
+[dir="ltr"] .heroText {
+  margin-left: 0;
+  margin-right: auto;
+  text-align: left;
+}
+
+/* RTL: text block sticks to the RIGHT edge of viewport */
 [dir="rtl"] .heroText {
   margin-left: auto;
   margin-right: 0;
@@ -383,18 +392,13 @@ main {
 }
 
 /* ============================ HERO TEXT 3D ANIMATION ============================ */
-/* Real 3D motion: perspective is on .heroContent / .mobileHeroText (parents).
-   Each line animates separately with rotateX flip. Short delays so all 3 lines
-   finish quickly even during fast scroll. */
+/* STRONG 3D motion that is clearly visible. */
 
 @keyframes heroLineIn {
   0% {
     opacity: 0;
-    transform: translate3d(0, 50px, -80px) rotateX(-35deg);
-    filter: blur(14px);
-  }
-  60% {
-    filter: blur(2px);
+    transform: translate3d(0, 60px, -150px) rotateX(-45deg);
+    filter: blur(16px);
   }
   100% {
     opacity: 1;
@@ -414,7 +418,7 @@ main {
   transform-origin: center top;
   backface-visibility: hidden;
   will-change: transform, opacity, filter;
-  animation: heroLineIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: heroLineIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-heroText p {
@@ -422,11 +426,11 @@ main {
 }
 
 .animate-heroText h1 {
-  animation-delay: 0.08s;
+  animation-delay: 0.1s;
 }
 
 .animate-heroText > span {
-  animation-delay: 0.18s;
+  animation-delay: 0.22s;
 }
 
 @keyframes scrollLine {
@@ -450,7 +454,8 @@ main {
 }
 
 .sectionBg,
-.sectionOverlay {
+.sectionOverlay,
+.sectionGlow {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -458,15 +463,79 @@ main {
 
 .sectionBg {
   z-index: -2;
-  background-position: center;
-  background-size: cover;
-  opacity: 0.28;
-  transform: scale(1.04);
+}
+
+.sectionGlow {
+  z-index: -1;
+  opacity: 0.55;
+  mix-blend-mode: screen;
 }
 
 .sectionOverlay {
-  z-index: -1;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.82), rgba(5, 5, 5, 0.94));
+  z-index: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.4), rgba(5, 5, 5, 0.85));
+}
+
+/* ---- per-section premium gradients (no external image needed) ---- */
+
+.section-services .sectionBg {
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(225, 6, 0, 0.18), transparent 55%),
+    radial-gradient(ellipse at 100% 100%, rgba(60, 60, 60, 0.35), transparent 60%),
+    linear-gradient(135deg, #0a0a0a, #050505 60%, #0a0808);
+}
+.section-services .sectionGlow {
+  background: radial-gradient(circle at 70% 30%, rgba(225, 6, 0, 0.12), transparent 50%);
+}
+
+.section-zones .sectionBg {
+  background:
+    radial-gradient(ellipse at 80% 0%, rgba(0, 166, 81, 0.16), transparent 55%),
+    radial-gradient(ellipse at 0% 80%, rgba(40, 60, 90, 0.3), transparent 60%),
+    linear-gradient(160deg, #060808, #050505 55%, #080a0a);
+}
+.section-zones .sectionGlow {
+  background: radial-gradient(circle at 30% 70%, rgba(0, 166, 81, 0.1), transparent 50%);
+}
+
+.section-process .sectionBg {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(120, 80, 200, 0.14), transparent 55%),
+    radial-gradient(ellipse at 50% 100%, rgba(80, 80, 80, 0.25), transparent 60%),
+    linear-gradient(180deg, #070707, #040404 60%, #070707);
+}
+.section-process .sectionGlow {
+  background: radial-gradient(circle at 50% 50%, rgba(120, 100, 200, 0.08), transparent 60%);
+}
+
+.section-shipping .sectionBg {
+  background:
+    radial-gradient(ellipse at 10% 20%, rgba(50, 120, 200, 0.18), transparent 55%),
+    radial-gradient(ellipse at 90% 80%, rgba(0, 100, 140, 0.2), transparent 60%),
+    linear-gradient(140deg, #060810, #050505 55%, #060a0c);
+}
+.section-shipping .sectionGlow {
+  background: radial-gradient(circle at 80% 20%, rgba(80, 140, 220, 0.1), transparent 55%);
+}
+
+.section-listings .sectionBg {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(225, 6, 0, 0.14), transparent 55%),
+    radial-gradient(ellipse at 100% 100%, rgba(50, 50, 50, 0.35), transparent 60%),
+    linear-gradient(135deg, #0a0606, #050505 55%, #080808);
+}
+.section-listings .sectionGlow {
+  background: radial-gradient(circle at 20% 80%, rgba(225, 6, 0, 0.08), transparent 55%);
+}
+
+.section-contact .sectionBg {
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(0, 166, 81, 0.16), transparent 55%),
+    radial-gradient(ellipse at 0% 100%, rgba(225, 6, 0, 0.12), transparent 60%),
+    linear-gradient(155deg, #060808, #050505 55%, #080606);
+}
+.section-contact .sectionGlow {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.04), transparent 65%);
 }
 
 .sectionInner {
@@ -763,7 +832,7 @@ footer p {
 
 /* ============================ MOBILE BREAKPOINT ============================ */
 
-@media (max-width: 980px) {
+@media (max-width: 768px) {
   .topbar {
     grid-template-columns: auto auto;
     height: 64px;
@@ -842,11 +911,6 @@ footer p {
   .sectionInner {
     min-height: auto;
     padding: 82px 18px;
-  }
-
-  .sectionBg {
-    opacity: 0.22;
-    transform: scale(1.08);
   }
 
   .sectionHead {
@@ -933,14 +997,14 @@ footer p {
 }
 
 /* Hide desktop hero on small screens early (in case JS hasn't matched yet) */
-@media (max-width: 980px) {
+@media (max-width: 768px) {
   .hero video.hero-video {
     display: none;
   }
 }
 
 /* Show desktop hero only at >980px, hide mobile hero */
-@media (min-width: 981px) {
+@media (min-width: 769px) {
   .mobileHero {
     display: none;
   }
