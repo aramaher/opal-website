@@ -155,6 +155,13 @@ main {
   min-height: 620px;
 }
 
+.heroShell {
+  height: 100vh;
+  height: 100svh;
+  min-height: 620px;
+  background: #000;
+}
+
 .heroMedia {
   position: relative;
   height: 100vh;
@@ -336,7 +343,7 @@ main {
   width: 100%;
   height: 100vh;
   height: 100svh;
-  min-height: 560px;
+  min-height: 580px;
   overflow: hidden;
   background: #000;
 }
@@ -392,13 +399,12 @@ main {
 }
 
 /* ============================ HERO TEXT 3D ANIMATION ============================ */
-/* STRONG 3D motion that is clearly visible. */
 
 @keyframes heroLineIn {
   0% {
     opacity: 0;
-    transform: translate3d(0, 60px, -150px) rotateX(-45deg);
-    filter: blur(16px);
+    transform: translate3d(0, 24px, 0) rotateX(-10deg);
+    filter: blur(8px);
   }
   100% {
     opacity: 1;
@@ -418,7 +424,7 @@ main {
   transform-origin: center top;
   backface-visibility: hidden;
   will-change: transform, opacity, filter;
-  animation: heroLineIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: heroLineIn 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-heroText p {
@@ -782,19 +788,17 @@ footer p {
 }
 
 /* ============================ REVEAL ON SCROLL (3D) ============================ */
-/* Real 3D motion. Parents (.cards, .cars, .sectionInner, .heroContent) have
-   perspective set so rotateX is actually visible in 3D space. */
 
 .reveal {
   opacity: 0;
-  transform: translate3d(0, 50px, -60px) rotateX(-22deg);
+  transform: translate3d(0, 24px, 0) rotateX(-8deg);
   transform-origin: center top;
   backface-visibility: hidden;
-  filter: blur(12px);
+  filter: blur(8px);
   transition:
-    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.72s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.72s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.72s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform, opacity, filter;
 }
 
@@ -872,8 +876,12 @@ footer p {
     position: relative;
     height: 100vh;
     height: 100svh;
-    min-height: 560px;
+    min-height: 580px;
     background: #000;
+  }
+
+  .heroShell {
+    min-height: 580px;
   }
 
   .heroMeta {
@@ -932,7 +940,7 @@ footer p {
     grid-template-columns: 1fr;
   }
 
-  /* Zones keep 2 columns — fits well on mobile */
+  /* Zones keep 2 columns â€” fits well on mobile */
   .cards.four {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -964,9 +972,9 @@ footer p {
     min-height: 52px;
   }
 
-  /* Lighter 3D reveal on mobile — keep rotateX but no blur for perf */
+  /* Lighter 3D reveal on mobile */
   .reveal {
-    transform: translate3d(0, 28px, 0) rotateX(-10deg);
+    transform: translate3d(0, 24px, 0) rotateX(-6deg);
     filter: none;
     transition:
       opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
@@ -977,11 +985,10 @@ footer p {
     transform: translate3d(0, 0, 0) rotateX(0deg);
   }
 
-  /* Lighter hero text animation on mobile — keep 3D but reduce blur */
   @keyframes heroLineInMobile {
     0% {
       opacity: 0;
-      transform: translate3d(0, 28px, 0) rotateX(-20deg);
+      transform: translate3d(0, 24px, 0) rotateX(-8deg);
     }
     100% {
       opacity: 1;
@@ -992,14 +999,7 @@ footer p {
   .animate-heroText p,
   .animate-heroText h1,
   .animate-heroText > span {
-    animation: heroLineInMobile 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-}
-
-/* Hide desktop hero on small screens early (in case JS hasn't matched yet) */
-@media (max-width: 768px) {
-  .hero video.hero-video {
-    display: none;
+    animation: heroLineInMobile 0.58s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }
 
