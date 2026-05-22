@@ -235,13 +235,10 @@ main {
   margin-bottom: 24px;
 }
 
-[dir="rtl"] .heroMeta {
-  justify-content: flex-end;
-}
-
 .heroMeta span,
 .heroText p,
 .scrollHint span,
+.card small,
 .sectionHead p {
   color: rgba(255, 255, 255, 0.52);
   font-size: 11px;
@@ -252,12 +249,10 @@ main {
 
 .heroText {
   max-width: 780px;
-  text-align: left;
 }
 
 [dir="rtl"] .heroText {
-  margin-left: auto;
-  margin-right: 0;
+  margin-inline-start: auto;
   text-align: right;
 }
 
@@ -280,8 +275,7 @@ main {
 }
 
 [dir="rtl"] .heroText > span {
-  margin-left: auto;
-  margin-right: 0;
+  margin-inline-start: auto;
 }
 
 .scrollHint {
@@ -374,50 +368,25 @@ main {
   top: -9999px;
 }
 
-/* ============================ HERO TEXT 3D ANIMATION ============================ */
-/* Each line animates separately with rotateX for premium cinematic feel.
-   Triggered by remounting via React `key` when stage changes. */
+/* ============================ HERO TEXT ANIMATION ============================ */
+/* CSS-only â€” triggered by remounting via `key` when stage changes */
 
-@keyframes heroLineIn {
-  0% {
+@keyframes heroText {
+  from {
     opacity: 0;
-    transform: translate3d(0, 40px, 0) rotateX(-30deg);
-    filter: blur(12px);
+    transform: translate3d(0, 22px, 0);
+    filter: blur(8px);
   }
-  60% {
-    filter: blur(2px);
-  }
-  100% {
+  to {
     opacity: 1;
-    transform: translate3d(0, 0, 0) rotateX(0deg);
+    transform: translate3d(0, 0, 0);
     filter: blur(0);
   }
 }
 
 .animate-heroText {
-  perspective: 1200px;
-  transform-style: preserve-3d;
-}
-
-.animate-heroText p,
-.animate-heroText h1,
-.animate-heroText > span {
-  display: block;
-  transform-origin: center top;
+  animation: heroText 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: transform, opacity, filter;
-  animation: heroLineIn 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.animate-heroText p {
-  animation-delay: 0s;
-}
-
-.animate-heroText h1 {
-  animation-delay: 0.12s;
-}
-
-.animate-heroText > span {
-  animation-delay: 0.26s;
 }
 
 @keyframes scrollLine {
@@ -527,7 +496,7 @@ main {
 }
 
 .card h3 {
-  margin: 0;
+  margin: 12px 0 0;
   color: #fff;
   font-size: 22px;
   font-weight: 300;
@@ -694,20 +663,18 @@ footer p {
   line-height: 1.7;
 }
 
-/* ============================ REVEAL ON SCROLL (3D) ============================ */
-/* Strong premium 3D motion: rotateX flip up, blur clear, translate up.
-   GPU-friendly: transform + opacity + filter only. */
+/* ============================ REVEAL ON SCROLL ============================ */
+/* GPU-only: transform + opacity. Subtle 3D rotateX for premium feel. */
 
 .reveal {
   opacity: 0;
-  transform: translate3d(0, 40px, 0) rotateX(-18deg);
+  transform: translate3d(0, 28px, 0) rotateX(8deg);
   transform-origin: center top;
-  perspective: 1000px;
-  filter: blur(10px);
+  filter: blur(6px);
   transition:
-    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform, opacity, filter;
 }
 
@@ -717,37 +684,30 @@ footer p {
   filter: blur(0);
 }
 
-/* Section heading lines get their own 3D feel via inner spans */
-.sectionHead.reveal p,
-.sectionHead.reveal h2,
-.sectionHead.reveal > span {
-  display: block;
-}
-
 /* Stagger cards in a row */
 .cards .reveal:nth-child(2) {
-  transition-delay: 0.08s;
+  transition-delay: 0.06s;
 }
 .cards .reveal:nth-child(3) {
-  transition-delay: 0.16s;
+  transition-delay: 0.12s;
 }
 .cards .reveal:nth-child(4) {
-  transition-delay: 0.24s;
+  transition-delay: 0.18s;
 }
 .cards .reveal:nth-child(5) {
-  transition-delay: 0.32s;
+  transition-delay: 0.24s;
 }
 .cards .reveal:nth-child(6) {
-  transition-delay: 0.4s;
+  transition-delay: 0.3s;
 }
 .cars .reveal:nth-child(2) {
-  transition-delay: 0.1s;
+  transition-delay: 0.08s;
 }
 .cars .reveal:nth-child(3) {
-  transition-delay: 0.2s;
+  transition-delay: 0.16s;
 }
 .cars .reveal:nth-child(4) {
-  transition-delay: 0.3s;
+  transition-delay: 0.24s;
 }
 
 /* ============================ MOBILE BREAKPOINT ============================ */
@@ -857,7 +817,7 @@ footer p {
     grid-template-columns: 1fr;
   }
 
-  /* Zones keep 2 columns — fits well on mobile */
+  /* Zones keep 2 columns â€” fits well on mobile */
   .cards.four {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -889,35 +849,17 @@ footer p {
     min-height: 52px;
   }
 
-  /* Lighter 3D reveal on mobile — keep rotateX but no blur for perf */
+  /* Lighter reveal on mobile to stay smooth */
   .reveal {
-    transform: translate3d(0, 28px, 0) rotateX(-10deg);
+    transform: translate3d(0, 20px, 0);
     filter: none;
     transition:
-      opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+      opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .reveal--visible {
-    transform: translate3d(0, 0, 0) rotateX(0deg);
-  }
-
-  /* Lighter hero text animation on mobile — keep 3D but reduce blur */
-  @keyframes heroLineInMobile {
-    0% {
-      opacity: 0;
-      transform: translate3d(0, 28px, 0) rotateX(-20deg);
-    }
-    100% {
-      opacity: 1;
-      transform: translate3d(0, 0, 0) rotateX(0deg);
-    }
-  }
-
-  .animate-heroText p,
-  .animate-heroText h1,
-  .animate-heroText > span {
-    animation: heroLineInMobile 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    transform: translate3d(0, 0, 0);
   }
 }
 
@@ -932,6 +874,17 @@ footer p {
 @media (min-width: 981px) {
   .mobileHero {
     display: none;
+  }
+
+  [dir="rtl"] .heroContent {
+    margin-left: auto;
+    margin-right: 0;
+    padding-left: 24px;
+    padding-right: clamp(28px, 7vw, 96px);
+  }
+
+  [dir="rtl"] .heroContent .heroMeta {
+    justify-content: flex-end;
   }
 }
 
