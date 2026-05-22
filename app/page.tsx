@@ -9,13 +9,12 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react";
-import gsap from "gsap";
 
 type Lang = "fa" | "en";
 
 const WHATSAPP = "971521035588";
 
-const heroImages = [
+const MOBILE_HERO_IMAGES = [
   "/hero-photo1.jpg",
   "/hero-photo2.jpg",
   "/hero-photo3.jpg",
@@ -23,33 +22,6 @@ const heroImages = [
   "/hero-photo5.jpg",
   "/hero-photo6.jpg",
 ] as const;
-
-const mobileHeroImageFallbacks = heroImages.map((src, index) => {
-  const n = index + 1;
-  return [
-    src,
-    `/hero-photo${n}.jpeg`,
-    `/hero-photo${n}.png`,
-    `/hero-photo${n}.webp`,
-    `/images/hero-photo${n}.jpg`,
-    `/images/hero-photo${n}.jpeg`,
-    `/images/hero-photo${n}.png`,
-    `/images/hero-photo${n}.webp`,
-    `/images/hero/hero-photo${n}.jpg`,
-    `/images/hero/hero-photo${n}.jpeg`,
-    `/images/hero/hero-photo${n}.png`,
-    `/images/hero/hero-photo${n}.webp`,
-    `/images/hero/mobile-${n}.jpg`,
-    `/images/hero/mobile-${n}.jpeg`,
-    `/images/hero/mobile-${n}.png`,
-    `/images/hero/mobile-${n}.webp`,
-    "/hero-poster.jpg",
-    "/hero-poster.jpeg",
-    "/hero-poster.png",
-    "/hero-poster.webp",
-    "/logo.png",
-  ];
-});
 
 const sectionBg = {
   services: "/images/backgrounds/services-bg.jpg",
@@ -308,7 +280,7 @@ function Section({
       <div className="sectionBg" style={{ backgroundImage: `url(${bg})` }} />
       <div className="sectionOverlay" />
       <div className="sectionInner">
-        <div className="sectionHead">
+        <div className="sectionHead reveal">
           <p>{label}</p>
           <h2>{title}</h2>
           {desc ? <span>{desc}</span> : null}
@@ -319,33 +291,15 @@ function Section({
   );
 }
 
-function MobileHeroImage({ index, alt }: { index: number; alt: string }) {
-  const sources = mobileHeroImageFallbacks[index] ?? mobileHeroImageFallbacks[0];
-  const [sourceIndex, setSourceIndex] = useState(0);
-
-  useEffect(() => {
-    setSourceIndex(0);
-  }, [index]);
-
-  return (
-    <img
-      src={sources[sourceIndex]}
-      alt={alt}
-      loading={index === 0 ? "eager" : "lazy"}
-      onError={() => {
-        setSourceIndex((current) =>
-          current < sources.length - 1 ? current + 1 : current,
-        );
-      }}
-    />
-  );
-}
-
 export default function Home() {
   const heroRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const mobileHeroRef = useRef<HTMLElement>(null);
+  const mobileImgRef = useRef<HTMLImageElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
+  const mobileProgressRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef(0);
+  const mobileFrameRef = useRef(0);
 
   const [lang, setLang] = useState<Lang>("fa");
   const [stageIndex, setStageIndex] = useState(0);
@@ -364,25 +318,33 @@ export default function Home() {
     setZone(zoneItems[0]);
   }, [lang, zoneItems]);
 
+  // -----------------------------------------------------------
+  // DESKTOP hero — GSAP ScrollTrigger video scrub
+  // Loaded dynamically only on desktop, only on client.
+  // -----------------------------------------------------------
   useLayoutEffect(() => {
-    const media = window.matchMedia("(max-width: 980px)");
-    if (media.matches || !heroRef.current || !progressRef.current) return;
+    if (typeof window === "undefined") return;
+    const isMobile = window.matchMedia("(max-width: 980px)").matches;
+    if (isMobile) return;
+
+    const hero = heroRef.current;
+    const progress = progressRef.current;
+    if (!hero || !progress) return;
 
     let cancelled = false;
     let trigger: { kill: () => void } | undefined;
     let removeMetadataListener: (() => void) | undefined;
 
-    const setupScrollTrigger = async () => {
-      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
-
+    const setup = async () => {
+      const [{ default: gsap }, { ScrollTrigger }] = await Promise.all([
+        import("gsap"),
+        import("gsap/ScrollTrigger"),
+      ]);
       if (cancelled || !heroRef.current || !progressRef.current) return;
 
       gsap.registerPlugin(ScrollTrigger);
 
-      const hero = heroRef.current;
-      const progress = progressRef.current;
       const video = videoRef.current;
-
       stageRef.current = 0;
       setStageIndex(0);
       progress.style.transform = "scaleX(0)";
@@ -405,16 +367,18 @@ export default function Home() {
             0.01,
             Math.min(video.duration - 0.01, video.duration * p),
           );
-
           if (Math.abs(video.currentTime - target) > 0.04) {
-            video.currentTime = target;
+            try {
+              video.currentTime = target;
+            } catch {
+              /* noop */
+            }
           }
         }
       };
 
       const createTrigger = () => {
         trigger?.kill();
-
         trigger = ScrollTrigger.create({
           trigger: hero,
           start: "top top",
@@ -425,25 +389,25 @@ export default function Home() {
           invalidateOnRefresh: true,
           onUpdate: (self) => setProgress(self.progress),
         });
-
         ScrollTrigger.refresh();
       };
 
       if (video) {
         video.muted = true;
         video.playsInline = true;
-        video.preload = "metadata";
-        video.pause();
-
+        video.preload = "auto";
+        try {
+          video.pause();
+        } catch {
+          /* noop */
+        }
         if (video.readyState >= 1) {
           createTrigger();
         } else {
           const onLoadedMetadata = () => createTrigger();
-
           video.addEventListener("loadedmetadata", onLoadedMetadata, {
             once: true,
           });
-
           removeMetadataListener = () => {
             video.removeEventListener("loadedmetadata", onLoadedMetadata);
           };
@@ -453,7 +417,7 @@ export default function Home() {
       }
     };
 
-    setupScrollTrigger();
+    setup();
 
     return () => {
       cancelled = true;
@@ -462,10 +426,123 @@ export default function Home() {
     };
   }, [lang, t.stages.length]);
 
+  // -----------------------------------------------------------
+  // MOBILE hero — GSAP ScrollTrigger pins hero + swaps image src
+  // No video, no autoplay, no poster.
+  // -----------------------------------------------------------
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    const isMobile = window.matchMedia("(max-width: 980px)").matches;
+    if (!isMobile) return;
+
+    const hero = mobileHeroRef.current;
+    const img = mobileImgRef.current;
+    const progress = mobileProgressRef.current;
+    if (!hero || !img || !progress) return;
+
+    let cancelled = false;
+    let trigger: { kill: () => void } | undefined;
+
+    const setup = async () => {
+      const [{ default: gsap }, { ScrollTrigger }] = await Promise.all([
+        import("gsap"),
+        import("gsap/ScrollTrigger"),
+      ]);
+      if (cancelled || !mobileHeroRef.current) return;
+
+      gsap.registerPlugin(ScrollTrigger);
+
+      stageRef.current = 0;
+      mobileFrameRef.current = 0;
+      setStageIndex(0);
+      img.src = MOBILE_HERO_IMAGES[0];
+      progress.style.transform = "scaleX(0)";
+
+      const totalFrames = MOBILE_HERO_IMAGES.length;
+      const totalStages = t.stages.length;
+
+      const setProgress = (p: number) => {
+        progress.style.transform = `scaleX(${p})`;
+
+        const nextFrame = Math.min(
+          totalFrames - 1,
+          Math.floor(p * totalFrames),
+        );
+        if (nextFrame !== mobileFrameRef.current) {
+          mobileFrameRef.current = nextFrame;
+          img.src = MOBILE_HERO_IMAGES[nextFrame];
+        }
+
+        const nextStage = Math.min(
+          totalStages - 1,
+          Math.round(p * (totalStages - 1)),
+        );
+        if (nextStage !== stageRef.current) {
+          stageRef.current = nextStage;
+          setStageIndex(nextStage);
+        }
+      };
+
+      trigger = ScrollTrigger.create({
+        trigger: hero,
+        start: "top top",
+        end: () => `+=${Math.max(window.innerHeight * 5, 3600)}`,
+        scrub: 0.5,
+        pin: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => setProgress(self.progress),
+      });
+
+      ScrollTrigger.refresh();
+    };
+
+    setup();
+
+    return () => {
+      cancelled = true;
+      trigger?.kill();
+    };
+  }, [lang, t.stages.length]);
+
+  // -----------------------------------------------------------
+  // Reveal-on-scroll for section content (cards, headings).
+  // Uses IntersectionObserver — light, GPU-only motion via CSS.
+  // -----------------------------------------------------------
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    const targets = document.querySelectorAll<HTMLElement>(".reveal");
+
+    if (prefersReduced || typeof IntersectionObserver === "undefined") {
+      targets.forEach((el) => el.classList.add("reveal--visible"));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("reveal--visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.18, rootMargin: "0px 0px -8% 0px" },
+    );
+
+    targets.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [lang]);
+
+  // Mark cards/cars with .reveal once on mount; we attach class via JSX below.
+
   const sendForm = useCallback(
     (event: FormEvent) => {
       event.preventDefault();
-
       window.open(
         waUrl(t.importWa(name, phone, vehicle, zone, message)),
         "_blank",
@@ -479,6 +556,7 @@ export default function Home() {
     <main dir={t.dir}>
       <header className="topbar">
         <a className="brand" href="#top" aria-label="OPAL">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.png" alt="OPAL" />
         </a>
 
@@ -521,7 +599,8 @@ export default function Home() {
         </div>
       </header>
 
-      <section id="top" ref={heroRef} className="hero">
+      {/* ====================== DESKTOP HERO (video scrub) ====================== */}
+      <section id="top" ref={heroRef} className="hero hero-section">
         <div className="heroMedia">
           <video
             ref={videoRef}
@@ -529,26 +608,26 @@ export default function Home() {
             poster="/hero-poster.jpg"
             muted
             playsInline
-            preload="metadata"
-            className="heroAsset"
+            preload="auto"
+            controls={false}
+            className="heroAsset hero-video"
           />
 
           <div className="heroShade" />
 
-          <div className="progress">
+          <div className="progress hero-progress">
             <div ref={progressRef} />
           </div>
 
           <div className="heroContent">
             <div className="heroMeta">
               <span>{t.heroSmall}</span>
-              <span>
-                {String(stageIndex + 1).padStart(2, "0")} /{" "}
-                {String(t.stages.length).padStart(2, "0")}
-              </span>
             </div>
 
-            <div key={`${lang}-${stageIndex}`} className="heroText">
+            <div
+              key={`d-${lang}-${stageIndex}`}
+              className="heroText animate-heroText"
+            >
               <p>{stage.eyebrow}</p>
               <h1>{stage.title}</h1>
               <span>{stage.desc}</span>
@@ -562,27 +641,53 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mobileHero" aria-label="OPAL mobile hero">
-        {t.stages.map((item, index) => (
-          <article className="mobileHeroPanel" key={item.eyebrow}>
-            <MobileHeroImage index={index} alt="OPAL vehicle import" />
-            <div className="mobileHeroShade" />
+      {/* ====================== MOBILE HERO (image scrub) ======================= */}
+      <section
+        id="top-mobile"
+        ref={mobileHeroRef}
+        className="mobileHero"
+        aria-label="OPAL mobile hero"
+      >
+        <div className="mobileHeroPanel">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            ref={mobileImgRef}
+            src={MOBILE_HERO_IMAGES[0]}
+            alt="OPAL vehicle import"
+            className="hero-mobile-image"
+            decoding="async"
+            fetchPriority="high"
+          />
 
-            <div className="mobileHeroText">
-              <div className="heroMeta">
-                <span>{t.heroSmall}</span>
-                <span>
-                  {String(index + 1).padStart(2, "0")} /{" "}
-                  {String(t.stages.length).padStart(2, "0")}
-                </span>
-              </div>
+          <div className="mobileHeroShade" />
 
-              <p>{item.eyebrow}</p>
-              <h1>{item.title}</h1>
-              <span>{item.desc}</span>
+          <div className="progress hero-progress mobileProgress">
+            <div ref={mobileProgressRef} />
+          </div>
+
+          <div className="mobileHeroText">
+            <div className="heroMeta">
+              <span>{t.heroSmall}</span>
             </div>
-          </article>
-        ))}
+
+            <div
+              key={`m-${lang}-${stageIndex}`}
+              className="heroText animate-heroText"
+            >
+              <p>{stage.eyebrow}</p>
+              <h1>{stage.title}</h1>
+              <span>{stage.desc}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Preload remaining frames so swap is instant — hidden, no layout cost */}
+        <div aria-hidden="true" className="mobileHeroPreload">
+          {MOBILE_HERO_IMAGES.slice(1).map((src) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={src} src={src} alt="" loading="eager" decoding="async" />
+          ))}
+        </div>
       </section>
 
       <Section
@@ -594,7 +699,7 @@ export default function Home() {
       >
         <div className="cards three">
           {t.sections.services.items.map((item, index) => (
-            <article className="card" key={item}>
+            <article className="card luxury-card reveal" key={item}>
               <small>{String(index + 1).padStart(2, "0")}</small>
               <h3>{item}</h3>
             </article>
@@ -611,7 +716,7 @@ export default function Home() {
         <div className="cards four">
           {zoneItems.map((item) => (
             <a
-              className="card zone"
+              className="card zone luxury-card reveal"
               key={item}
               href={waUrl(
                 isFa
@@ -634,7 +739,7 @@ export default function Home() {
       >
         <div className="cards five">
           {t.sections.process.items.map((item, index) => (
-            <article className="card" key={item}>
+            <article className="card luxury-card reveal" key={item}>
               <small>{String(index + 1).padStart(2, "0")}</small>
               <h3>{item}</h3>
             </article>
@@ -651,7 +756,7 @@ export default function Home() {
       >
         <div className="cards four">
           {t.sections.shipping.items.map((item, index) => (
-            <article className="card" key={item}>
+            <article className="card luxury-card reveal" key={item}>
               <small>{String(index + 1).padStart(2, "0")}</small>
               <h3>{item}</h3>
             </article>
@@ -671,7 +776,8 @@ export default function Home() {
             const route = isFa ? car.routeFa : car.routeEn;
 
             return (
-              <article className="car" key={car.model}>
+              <article className="car car-card reveal" key={car.model}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={car.image} alt={car.model} loading="lazy" />
 
                 <div>
@@ -680,7 +786,10 @@ export default function Home() {
                     {t.year}: {car.year}
                   </p>
                   <p>{route}</p>
-                  <a href={waUrl(t.carWa(car.model, car.year, route))}>
+                  <a
+                    className="btn-whatsapp"
+                    href={waUrl(t.carWa(car.model, car.year, route))}
+                  >
                     {t.carCta}
                   </a>
                 </div>
@@ -697,12 +806,13 @@ export default function Home() {
         title={t.sections.contact.title}
         desc={t.sections.contact.desc}
       >
-        <form className="form" onSubmit={sendForm}>
+        <form className="form glass-panel reveal" onSubmit={sendForm}>
           <input
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={t.form.name}
+            autoComplete="name"
           />
 
           <input
@@ -710,6 +820,8 @@ export default function Home() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder={t.form.phone}
+            inputMode="tel"
+            autoComplete="tel"
           />
 
           <input
@@ -733,11 +845,14 @@ export default function Home() {
             placeholder={t.form.message}
           />
 
-          <button type="submit">{t.form.submit}</button>
+          <button type="submit" className="btn-whatsapp">
+            {t.form.submit}
+          </button>
         </form>
       </Section>
 
       <footer>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo.png" alt="OPAL" />
         <p>2026 OPAL - {t.footer}</p>
       </footer>
