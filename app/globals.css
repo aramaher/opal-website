@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   --bg: #050505;
   --text: #ededed;
@@ -9,20 +11,30 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
   scroll-behavior: auto;
   background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, Helvetica,
+    "Noto Sans Arabic", "Vazirmatn", "Tahoma", sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+[dir="rtl"] body {
+  font-family: "Vazirmatn", "IRANSansX", "IRANSans", "Tahoma", -apple-system,
+    Arial, sans-serif;
 }
 
 a {
@@ -37,6 +49,13 @@ textarea {
   font: inherit;
 }
 
+input,
+select,
+textarea,
+button {
+  font-size: 16px;
+}
+
 img,
 video {
   display: block;
@@ -48,6 +67,8 @@ main {
   overflow-x: hidden;
   background: #050505;
 }
+
+/* ============================ TOPBAR ============================ */
 
 .topbar {
   position: fixed;
@@ -64,6 +85,7 @@ main {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(0, 0, 0, 0.58);
   backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .brand img {
@@ -123,15 +145,14 @@ main {
   border-radius: 999px;
 }
 
-.hero {
+/* ============================ HERO (desktop) ============================ */
+
+.hero,
+.hero-section {
   position: relative;
   height: 100vh;
   height: 100svh;
   min-height: 620px;
-}
-
-.mobileHero {
-  display: none;
 }
 
 .heroMedia {
@@ -143,7 +164,8 @@ main {
   background: #000;
 }
 
-.heroAsset {
+.heroAsset,
+.hero-video {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -152,6 +174,10 @@ main {
   object-position: center;
   background: #000;
   transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+  pointer-events: none;
 }
 
 .heroShade {
@@ -165,7 +191,8 @@ main {
     rgba(0, 0, 0, 0.08);
 }
 
-.progress {
+.progress,
+.hero-progress {
   position: absolute;
   z-index: 5;
   top: 0;
@@ -175,15 +202,18 @@ main {
   background: rgba(255, 255, 255, 0.12);
 }
 
-.progress div {
+.progress > div,
+.hero-progress > div {
   width: 100%;
   height: 100%;
   background: var(--red);
   transform: scaleX(0);
   transform-origin: left center;
+  will-change: transform;
 }
 
-[dir="rtl"] .progress div {
+[dir="rtl"] .progress > div,
+[dir="rtl"] .hero-progress > div {
   transform-origin: right center;
 }
 
@@ -200,9 +230,8 @@ main {
 
 .heroMeta {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  gap: 18px;
   margin-bottom: 24px;
 }
 
@@ -220,7 +249,6 @@ main {
 
 .heroText {
   max-width: 780px;
-  animation: heroText 0.55s ease both;
 }
 
 [dir="rtl"] .heroText {
@@ -237,7 +265,7 @@ main {
   letter-spacing: 0;
 }
 
-.heroText span {
+.heroText > span {
   display: block;
   max-width: 620px;
   margin-top: 22px;
@@ -246,7 +274,7 @@ main {
   line-height: 1.8;
 }
 
-[dir="rtl"] .heroText span {
+[dir="rtl"] .heroText > span {
   margin-inline-start: auto;
 }
 
@@ -277,27 +305,39 @@ main {
   animation: scrollLine 1.45s ease-in-out infinite;
 }
 
+/* ============================ HERO (mobile) ============================ */
+
+.mobileHero {
+  display: none;
+}
+
 .mobileHeroPanel {
   position: relative;
-  min-height: 100vh;
-  min-height: 100svh;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  min-height: 560px;
   overflow: hidden;
   background: #000;
 }
 
-.mobileHeroPanel img {
+.hero-mobile-image {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
+  background: #000;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .mobileHeroShade {
   position: absolute;
   inset: 0;
   z-index: 1;
+  pointer-events: none;
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.42), transparent 34%),
     linear-gradient(0deg, rgba(0, 0, 0, 0.84), rgba(0, 0, 0, 0.1) 58%),
@@ -306,48 +346,47 @@ main {
 
 .mobileHeroText {
   position: absolute;
-  z-index: 2;
+  z-index: 3;
   left: 0;
   right: 0;
   bottom: 0;
   padding: 0 18px 74px;
 }
 
-.mobileHeroText p {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 10px;
-  line-height: 1.5;
-  letter-spacing: 0;
-  text-transform: uppercase;
+.mobileProgress {
+  z-index: 5;
 }
 
-.mobileHeroText h1 {
-  margin: 12px 0 0;
-  color: #fff;
-  font-size: clamp(38px, 12vw, 58px);
-  font-weight: 300;
-  line-height: 1.12;
-  letter-spacing: 0;
+.mobileHeroPreload {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  left: -9999px;
+  top: -9999px;
 }
 
-.mobileHeroText > span {
-  display: block;
-  margin-top: 14px;
-  color: rgba(255, 255, 255, 0.84);
-  font-size: 14px;
-  line-height: 1.9;
-}
+/* ============================ HERO TEXT ANIMATION ============================ */
+/* CSS-only — triggered by remounting via `key` when stage changes */
 
 @keyframes heroText {
   from {
     opacity: 0;
-    transform: translateY(22px);
+    transform: translate3d(0, 22px, 0);
+    filter: blur(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
   }
+}
+
+.animate-heroText {
+  animation: heroText 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity, filter;
 }
 
 @keyframes scrollLine {
@@ -359,7 +398,10 @@ main {
   }
 }
 
-.section {
+/* ============================ SECTIONS ============================ */
+
+.section,
+.section-shell {
   position: relative;
   isolation: isolate;
   min-height: 100vh;
@@ -419,6 +461,8 @@ main {
   line-height: 1.9;
 }
 
+/* ============================ CARDS ============================ */
+
 .cards {
   display: grid;
   gap: 16px;
@@ -436,13 +480,19 @@ main {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
-.card {
+.card,
+.luxury-card {
   min-height: 132px;
   padding: 24px;
   border: 1px solid var(--soft);
   border-radius: 8px;
   background: rgba(5, 5, 5, 0.58);
   backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .card h3 {
@@ -461,20 +511,41 @@ main {
   justify-content: flex-end;
 }
 
+@media (hover: hover) {
+  .card:hover,
+  .luxury-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+/* ============================ LISTINGS ============================ */
+
 .cars {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px;
 }
 
-.car {
+.car,
+.car-card {
   overflow: hidden;
   border: 1px solid var(--soft);
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.58);
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.car img {
+@media (hover: hover) {
+  .car:hover,
+  .car-card:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.car img,
+.car-card img {
   width: 100%;
   aspect-ratio: 16 / 10;
   object-fit: cover;
@@ -498,23 +569,10 @@ main {
   line-height: 1.6;
 }
 
-.car a,
-.form button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 46px;
-  margin-top: 18px;
-  padding: 0 22px;
-  border: 1px solid rgba(0, 166, 81, 0.5);
-  border-radius: 999px;
-  background: var(--green);
-  color: #fff;
-  font-size: 12px;
-  cursor: pointer;
-}
+/* ============================ FORM ============================ */
 
-.form {
+.form,
+.glass-panel {
   display: grid;
   gap: 14px;
   max-width: 680px;
@@ -523,6 +581,7 @@ main {
   border-radius: 8px;
   background: rgba(5, 5, 5, 0.58);
   backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .form input,
@@ -536,6 +595,13 @@ main {
   background: rgba(0, 0, 0, 0.42);
   color: #fff;
   padding: 0 16px;
+  transition: border-color 0.3s;
+}
+
+.form input:focus,
+.form select:focus,
+.form textarea:focus {
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .form textarea {
@@ -544,10 +610,38 @@ main {
   resize: vertical;
 }
 
+.car a,
+.form button,
+.btn-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  margin-top: 18px;
+  padding: 0 22px;
+  border: 1px solid rgba(0, 166, 81, 0.5);
+  border-radius: 999px;
+  background: var(--green);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    background 0.3s;
+}
+
+.car a:active,
+.form button:active,
+.btn-whatsapp:active {
+  transform: scale(0.98);
+}
+
 .form button {
   width: 100%;
   margin-top: 4px;
 }
+
+/* ============================ FOOTER ============================ */
 
 footer {
   padding: 48px 22px;
@@ -569,12 +663,63 @@ footer p {
   line-height: 1.7;
 }
 
+/* ============================ REVEAL ON SCROLL ============================ */
+/* GPU-only: transform + opacity. Subtle 3D rotateX for premium feel. */
+
+.reveal {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0) rotateX(8deg);
+  transform-origin: center top;
+  filter: blur(6px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity, filter;
+}
+
+.reveal--visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) rotateX(0deg);
+  filter: blur(0);
+}
+
+/* Stagger cards in a row */
+.cards .reveal:nth-child(2) {
+  transition-delay: 0.06s;
+}
+.cards .reveal:nth-child(3) {
+  transition-delay: 0.12s;
+}
+.cards .reveal:nth-child(4) {
+  transition-delay: 0.18s;
+}
+.cards .reveal:nth-child(5) {
+  transition-delay: 0.24s;
+}
+.cards .reveal:nth-child(6) {
+  transition-delay: 0.3s;
+}
+.cars .reveal:nth-child(2) {
+  transition-delay: 0.08s;
+}
+.cars .reveal:nth-child(3) {
+  transition-delay: 0.16s;
+}
+.cars .reveal:nth-child(4) {
+  transition-delay: 0.24s;
+}
+
+/* ============================ MOBILE BREAKPOINT ============================ */
+
 @media (max-width: 980px) {
   .topbar {
     grid-template-columns: auto auto;
     height: 64px;
     gap: 12px;
     padding: 0 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 
   .brand img {
@@ -590,25 +735,25 @@ footer p {
   }
 
   .actions a {
-    display: none;
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    font-size: 10px;
   }
 
-  .hero {
+  /* Desktop hero hidden, mobile hero shown */
+  .hero,
+  .hero-section {
     display: none;
   }
 
   .mobileHero {
     display: block;
+    position: relative;
+    height: 100vh;
+    height: 100svh;
+    min-height: 560px;
     background: #000;
-    scroll-snap-type: y proximity;
-  }
-
-  .mobileHeroPanel {
-    scroll-snap-align: start;
-  }
-
-  .heroContent {
-    padding: 0 18px 86px;
   }
 
   .heroMeta {
@@ -617,7 +762,6 @@ footer p {
 
   .heroMeta span,
   .heroText p,
-  .scrollHint span,
   .sectionHead p,
   .card small {
     font-size: 10px;
@@ -628,22 +772,19 @@ footer p {
   }
 
   .heroText h1 {
-    font-size: clamp(38px, 12vw, 58px);
+    font-size: clamp(36px, 11vw, 56px);
     line-height: 1.12;
   }
 
-  .heroText span {
+  .heroText > span {
     max-width: 100%;
     margin-top: 14px;
     font-size: 14px;
-    line-height: 1.9;
+    line-height: 1.85;
   }
 
-  .scrollHint {
-    bottom: 18px;
-  }
-
-  .section {
+  .section,
+  .section-shell {
     min-height: auto;
   }
 
@@ -662,35 +803,99 @@ footer p {
   }
 
   .sectionHead h2 {
-    font-size: clamp(31px, 9vw, 44px);
+    font-size: clamp(30px, 8.5vw, 42px);
   }
 
   .sectionHead span {
     font-size: 14px;
   }
 
+  /* Single column for most card grids */
   .cards.three,
-  .cards.four,
   .cards.five,
   .cars {
     grid-template-columns: 1fr;
   }
 
-  #zones .cards.four {
+  /* Zones keep 2 columns — fits well on mobile */
+  .cards.four {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .card {
+  .card,
+  .luxury-card {
     min-height: 112px;
     padding: 20px;
+    /* Reduce blur for mobile perf */
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
   }
 
   .card h3 {
-    font-size: 20px;
+    font-size: 19px;
   }
 
   .car div,
-  .form {
+  .form,
+  .glass-panel {
     padding: 18px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .car a,
+  .form button,
+  .btn-whatsapp {
+    min-height: 52px;
+  }
+
+  /* Lighter reveal on mobile to stay smooth */
+  .reveal {
+    transform: translate3d(0, 20px, 0);
+    filter: none;
+    transition:
+      opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal--visible {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Hide desktop hero on small screens early (in case JS hasn't matched yet) */
+@media (max-width: 980px) {
+  .hero video.hero-video {
+    display: none;
+  }
+}
+
+/* Show desktop hero only at >980px, hide mobile hero */
+@media (min-width: 981px) {
+  .mobileHero {
+    display: none;
+  }
+}
+
+/* ============================ REDUCED MOTION ============================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .scrollHint i::after {
+    animation: none;
   }
 }
